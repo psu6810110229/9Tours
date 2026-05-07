@@ -14,10 +14,17 @@ import { EventsController } from './events.controller';
 import { EventsService } from './events.service';
 import { ToursModule } from '../tours/tours.module';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
+import { Payment } from '../payments/entities/payment.entity';
+import { Review } from '../reviews/entities/review.entity';
+import { Notification } from '../notifications/entities/notification.entity';
+import { FavoriteTour } from '../favorites/entities/favorite-tour.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([TourView, DashboardStatsDaily, Booking, User, Tour, TourSchedule, BehaviorEvent]),
+        TypeOrmModule.forFeature([
+            TourView, DashboardStatsDaily, Booking, User, Tour, TourSchedule,
+            BehaviorEvent, Payment, Review, Notification, FavoriteTour,
+        ]),
         ToursModule,
     ],
     providers: [DashboardService, DashboardSeederService, EventsService, OptionalJwtAuthGuard],

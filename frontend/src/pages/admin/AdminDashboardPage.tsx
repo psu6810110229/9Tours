@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  Area,
-  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
@@ -331,15 +329,27 @@ export default function AdminDashboardPage() {
                   <h2 className="mb-3 font-bold text-gray-900">ยอดคำสั่งซื้อ</h2>
                   <div className="h-48">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={bookingsOverTime}>
+                      <BarChart data={bookingsOverTime} barCategoryGap="20%" barGap={2}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="day" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 10 }} />
-                        <Tooltip />
-                        <Area type="monotone" dataKey="lastMonth" stroke="#D1D5DB" fill="#F3F4F6" fillOpacity={0.6} name="เดือนที่แล้ว" />
-                        <Area type="monotone" dataKey="thisMonth" stroke="#F5A623" fill="#FEF3C7" fillOpacity={0.6} name="เดือนนี้" />
+                        <XAxis
+                          dataKey="day"
+                          tick={{ fontSize: 10 }}
+                          tickFormatter={(v: number) => (v % 5 === 1 || v === 1 ? String(v) : '')}
+                          interval={0}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 10 }}
+                          allowDecimals={false}
+                          width={24}
+                        />
+                        <Tooltip
+                          formatter={(value: number, name: string) => [value, name]}
+                          labelFormatter={(label) => `วันที่ ${label}`}
+                        />
                         <Legend wrapperStyle={{ fontSize: 11 }} />
-                      </AreaChart>
+                        <Bar dataKey="lastMonth" name="เดือนที่แล้ว" fill="#D1D5DB" radius={[3, 3, 0, 0]} maxBarSize={14} />
+                        <Bar dataKey="thisMonth" name="เดือนนี้" fill="#F5A623" radius={[3, 3, 0, 0]} maxBarSize={14} />
+                      </BarChart>
                     </ResponsiveContainer>
                   </div>
                   <div className="mt-3 flex items-center gap-8 text-center">

@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { trackEvent } from '../services/trackingService'
 import type { Tour } from '../types/tour'
 
@@ -139,8 +139,10 @@ export default function TourCard({ tour, isFavorite = false, isInactive = false,
       <div className="h-[128px] overflow-hidden border-b border-white/40 bg-slate-100/90 sm:h-[170px]">
         {hasCoverImage ? (
           <img
-            src={coverImage}
+            src={coverImage.replace('w=800&q=80', 'w=400&q=70').replace('w=800', 'w=400')}
             alt={tour.name}
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           />
         ) : (

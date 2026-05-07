@@ -88,6 +88,7 @@ DB_USERNAME=init
 DB_PASSWORD=your_password
 DB_DATABASE=9tours_db
 PORT=3000
+BACKEND_HOST_PORT=3001
 JWT_SECRET=replace-with-strong-secret
 CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 TRACKING_ENABLED=true
@@ -96,8 +97,11 @@ TRACKING_HASH_SALT=replace-with-random-salt
 
 ### 3. Start Database
 ```bash
-docker-compose up -d
+docker-compose up -d db
 ```
+
+If you start the full Docker stack, Docker publishes the backend on `BACKEND_HOST_PORT`
+(`3001` by default) so your local Nest dev server can keep using `PORT=3000`.
 
 ### 4. Run Backend
 ```bash

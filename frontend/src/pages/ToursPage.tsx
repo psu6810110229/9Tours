@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import TourCard from '../components/TourCard'
 import SearchBar from '../components/common/SearchBar'
@@ -8,6 +8,8 @@ import { festivalService } from '../services/festivalService'
 import { tourService } from '../services/tourService'
 import type { Festival, Tour } from '../types/tour'
 import { useFavoritesContext } from '../context/FavoritesContext'
+
+const PAGE_SIZE = 12
 
 const SORT_OPTIONS = [
   { value: 'default', label: 'เรียงตาม: ค่าเริ่มต้น' },
@@ -40,6 +42,7 @@ export default function ToursPage() {
   const [tours, setTours] = useState<Tour[]>([])
   const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState('default')
+  const [currentPage, setCurrentPage] = useState(1)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const [sortMenuOpen, setSortMenuOpen] = useState(false)
   const sortMenuRef = useRef<HTMLDivElement>(null)
@@ -200,6 +203,20 @@ export default function ToursPage() {
       return 0
     })
   }, [sortBy, tours])
+
+  // Reset to page 1 whenever filters or sort change
+  useEffect(() => { setCurrentPage(1) }, [sortedTours])
+
+  const totalPages = Math.ceil(sortedTours.length / PAGE_SIZE)
+  const pagedTours = useMemo(
+    () => sortedTours.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [sortedTours, currentPage],
+  )
+
+  const goToPage = useCallback((page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
 
   const availableCategories = useMemo(() => {
     return Array.from(new Set(allTours.flatMap((tour) => tour.categories))).sort((a, b) => a.localeCompare(b, 'th'))
@@ -406,16 +423,94 @@ export default function ToursPage() {
               <p className="mt-2 text-sm text-gray-400">ลองขยายช่วงราคา เปลี่ยนเดือน หรือเลือกตัวกรองให้น้อยลง</p>
             </div>
           ) : (
-            <div className="mx-auto grid max-w-5xl grid-cols-2 gap-2.25 sm:gap-4 md:grid-cols-3 md:gap-4">
-              {sortedTours.map((tour) => (
-                <TourCard
-                  key={tour.id}
-                  tour={tour}
-                  isFavorite={isFavorite(tour.id)}
-                  onToggleFavorite={toggleFavorite}
-                />
-              ))}
-            </div>
+            <>
+              {/* Count summary */}
+              <p className="mb-3 text-sm text-gray-500">
+                แสดง{' '}
+                <span className="font-semibold text-gray-800">
+                  {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, sortedTours.length)}
+                </span>{' '}
+                จาก <span className="font-semibold text-gray-800">{sortedTours.length}</span> ทัวร์
+              </p>
+
+              <div className="mx-auto grid max-w-5xl grid-cols-2 gap-2.25 sm:gap-4 md:grid-cols-3 md:gap-4">
+                {pagedTours.map((tour) => (
+                  <TourCard
+                    key={tour.id}
+                    tour={tour}
+                    isFavorite={isFavorite(tour.id)}
+                    onToggleFavorite={toggleFavorite}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination bar */}
+              {totalPages > 1 && (
+                <div className="mt-8 flex items-center justify-center gap-1.5">
+                  {/* Prev */}
+                  <button
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={() => goToPage(currentPage - 1)}
+                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-50 disabled:pointer-events-none disabled:opacity-30"
+                    aria-label="หน้าก่อนหน้า"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m15 19-7-7 7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Page numbers with ellipsis */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((page) => {
+                      if (totalPages <= 7) return true
+                      if (page === 1 || page === totalPages) return true
+                      if (Math.abs(page - currentPage) <= 1) return true
+                      return false
+                    })
+                    .reduce<(number | '...')[]>((acc, page, idx, arr) => {
+                      if (idx > 0 && typeof arr[idx - 1] === 'number' && (page as number) - (arr[idx - 1] as number) > 1) {
+                        acc.push('...')
+                      }
+                      acc.push(page)
+                      return acc
+                    }, [])
+                    .map((item, idx) =>
+                      item === '...' ? (
+                        <span key={`ellipsis-${idx}`} className="flex h-9 w-9 items-center justify-center text-sm text-gray-400">…</span>
+                      ) : (
+                        <button
+                          key={item}
+                          type="button"
+                          onClick={() => goToPage(item as number)}
+                          className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-semibold transition-all ${
+                            currentPage === item
+                              ? 'bg-[var(--color-primary)] text-white shadow-md scale-105'
+                              : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                          aria-current={currentPage === item ? 'page' : undefined}
+                        >
+                          {item}
+                        </button>
+                      ),
+                    )
+                  }
+
+                  {/* Next */}
+                  <button
+                    type="button"
+                    disabled={currentPage === totalPages}
+                    onClick={() => goToPage(currentPage + 1)}
+                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 transition-colors hover:border-gray-300 hover:bg-gray-50 disabled:pointer-events-none disabled:opacity-30"
+                    aria-label="หน้าถัดไป"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m9 5 7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>

@@ -66,7 +66,7 @@ services:
     volumes:
       - backend_uploads:/app/uploads
     ports:
-      - "3000:3000"
+      - "${BACKEND_HOST_PORT:-3001}:3000"
 
   frontend:
     build:

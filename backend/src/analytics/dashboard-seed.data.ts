@@ -63,11 +63,57 @@ function addDays(offset: number) {
   return formatDate(date);
 }
 
-function createImageSet(keyword: string) {
+// Maps seed keywords to loremflickr-friendly search terms + lock numbers
+// loremflickr.com/W/H/{keywords}/lock/{n} → keyword-matched, deterministic image
+const IMAGE_KEYWORD_MAP: Record<string, [string, string, string]> = {
+  'phuket-old-town':     ['phuket,beach', 'phuket,oldtown', 'phuket,sea'],
+  'cheow-lan-lake':      ['lake,thailand', 'kayak,lake', 'raft,water'],
+  'chiang-mai-mountain': ['chiangmai,temple', 'chiangmai,mountain', 'chiangmai,cafe'],
+  'krabi-island':        ['krabi,island', 'krabi,beach', 'krabi,sea'],
+  'atv-phuket':          ['atv,adventure', 'phuket,viewpoint', 'offroad,jungle'],
+  'chiang-rai-temple':   ['chiangrai,temple', 'whitetemple,chiangrai', 'blackhouse,chiangrai'],
+  'kanchanaburi-river':  ['river,thailand', 'kanchanaburi,bridge', 'rafting,river'],
+  'ayutthaya-temple':    ['ayutthaya,temple', 'ancient,ruins', 'boat,river'],
+  'khao-kho-mountain':   ['mountain,fog', 'highland,thailand', 'flower,mountain'],
+  'pattaya-island':      ['pattaya,beach', 'island,sea', 'seafood,dinner'],
+  'nan-temple':          ['nan,temple', 'northern,thailand', 'salt,village'],
+  'chanthaburi-fruit':   ['crab,seafood', 'fruit,garden', 'riverside,community'],
+  'loei-mekong':         ['mekong,river', 'loei,walking', 'skywalk,viewpoint'],
+  'huahin-beach':        ['huahin,beach', 'train,cafe', 'night,market'],
+  'mae-kampong-nature':  ['waterfall,forest', 'homestay,mountain', 'coffee,garden'],
+  'nakhon-nayok-nature': ['waterfall,nature', 'atv,park', 'cafe,garden'],
+  'phangnga-bay':        ['phangnga,bay', 'limestone,sea', 'sunset,cruise'],
+  'ubon-temple-mekong':  ['temple,thailand', 'mekong,ubon', 'stone,river'],
+  'rayong-beach-fruit':  ['rayong,beach', 'fruit,orchard', 'island,dinner'],
+  'phrae-lampang':       ['wooden,house', 'lampang,history', 'horse,carriage'],
+  'chumphon-diving':     ['snorkeling,sea', 'coral,reef', 'island,coffee'],
+  'sukhothai-cycling':   ['sukhothai,ruins', 'cycling,park', 'ancient,thailand'],
+  'trang-island':        ['trang,island', 'emerald,cave', 'boat,lunch'],
+  'ratchaburi-farm':     ['farm,nature', 'ratchaburi,farm', 'cabin,mountain'],
+  'buriram-temple':      ['stone,temple', 'rice,field', 'local,food'],
+  'chiang-mai-private':  ['doi,suthep', 'private,tour', 'northern,dinner'],
+  'samui-beach':         ['samui,beach', 'bigbuddha,samui', 'samui,cafe'],
+  'pai-mountain':        ['pai,mountain', 'bamboo,bridge', 'valley,cafe'],
+  'suphanburi-flower':   ['flower,field', 'old,market', 'garden,restaurant'],
+  'khaoyai-nature':      ['khaoyai,nature', 'vineyard,wine', 'mountain,resort'],
+};
+
+function createImageSet(keyword: string): string[] {
+  const terms = IMAGE_KEYWORD_MAP[keyword];
+  if (!terms) {
+    // Fallback: use keyword directly
+    return [
+      `https://loremflickr.com/800/600/${keyword}/lock/1`,
+      `https://loremflickr.com/800/600/${keyword}/lock/2`,
+      `https://loremflickr.com/800/600/${keyword}/lock/3`,
+    ];
+  }
+  // Each image uses a different keyword term, lock number offset by 10 per image to vary results
+  const lockBase = Math.abs(keyword.split('').reduce((s, c) => s + c.charCodeAt(0), 0)) % 90 + 10;
   return [
-    `https://images.unsplash.com/featured/?${keyword},thailand,travel`,
-    `https://images.unsplash.com/featured/?${keyword},landscape,thailand`,
-    `https://images.unsplash.com/featured/?${keyword},tourism,asia`,
+    `https://loremflickr.com/800/600/${terms[0]}/lock/${lockBase}`,
+    `https://loremflickr.com/800/600/${terms[1]}/lock/${lockBase + 1}`,
+    `https://loremflickr.com/800/600/${terms[2]}/lock/${lockBase + 2}`,
   ];
 }
 
@@ -639,3 +685,135 @@ export const dashboardToursSeed: TourSeed[] = tourConfigs.map(({ imageKeyword, s
   images: createImageSet(imageKeyword),
   schedules: buildSchedules({ scheduleType, baseOffset, seats, bookedValues, tripDays }),
 }));
+
+// ─── Thai-language review comments ───────────────────────────────────────────
+export const THAI_REVIEW_COMMENTS: { rating: number; comment: string }[] = [
+  { rating: 5, comment: 'ทริปนี้สนุกมากเลยค่ะ ไกด์พี่เก่งและอธิบายดีมาก อาหารอร่อย วิวสวยงามมาก ประทับใจมากจนอยากกลับไปอีก' },
+  { rating: 5, comment: 'บรรยากาศดีมาก จัดโปรแกรมพอดี ไม่เร่งจนเกินไป ได้พักผ่อนจริง ๆ ราคาคุ้มค่าคุ้มราคามาก' },
+  { rating: 5, comment: 'ประทับใจมากเลยครับ รถสะอาด ตรงเวลา ไกด์ดูแลดีมาก อาหารครบทุกมื้อ วิวสวยมาก แนะนำเลย' },
+  { rating: 5, comment: 'เยี่ยมมากค่ะ วางแผนทริปมาดีมาก ไม่แน่นจนเหนื่อย มีเวลาถ่ายรูปเพียงพอ ของกินอร่อยทุกจุด' },
+  { rating: 5, comment: 'คุ้มค่ามากครับ ที่พักสวย บรรยากาศดี ไกด์เป็นกันเอง ดูแลทุกคนดีมาก จะกลับมาจองซ้ำแน่นอน' },
+  { rating: 4, comment: 'ทริปดีมากครับ สนุกดี แต่เวลาน้อยไปหน่อยที่แต่ละจุด ถ้ามีเวลามากกว่านี้จะดีมาก โดยรวมพอใจมาก' },
+  { rating: 4, comment: 'ชอบมากเลยค่ะ ไกด์น่ารักมาก อธิบายละเอียด อาหารอร่อย แต่รถค่อนข้างอัดแน่นนิดหน่อย' },
+  { rating: 4, comment: 'ทริปดีค่ะ คุ้มค่าดี บรรยากาศสวย แต่อยากให้มีเวลาพักผ่อนช่วงบ่ายมากกว่านี้ โดยรวมโอเคมาก' },
+  { rating: 4, comment: 'สนุกดีครับ ไกด์เป็นกันเอง ทริปไม่เหนื่อยมาก มีกิจกรรมพอดี อาหารกลางวันดีมาก จะมาอีกครั้ง' },
+  { rating: 4, comment: 'ดีมากค่ะ วิวสวยงาม ไกด์ดูแลดี อาหารอร่อย แต่ต้องการจุดจอดรถที่ดีกว่านี้ โดยรวมพอใจ' },
+  { rating: 5, comment: 'วิวสวยมากครับ ไม่ผิดหวังเลย ไกด์พาเที่ยวครบทุกจุดสำคัญ มีเวลาถ่ายรูปและพักผ่อนพอดี ๆ' },
+  { rating: 5, comment: 'ชอบมากค่ะ ที่พักสะอาดมาก อาหารเช้าอร่อย วิวจากห้องสวยงาม ไกด์ดูแลดีตลอดทริป' },
+  { rating: 3, comment: 'ทริปพอใช้ได้ครับ แต่คิดว่าราคาแพงไปนิดหน่อยสำหรับสิ่งที่ได้ อาหารกลางวันไม่ค่อยถูกปาก' },
+  { rating: 5, comment: 'ดีเยี่ยมมากค่ะ ทุกอย่างเป็นไปตามที่ระบุไว้ ไกด์ตรงเวลา รถสะอาด อาหารอร่อย วิวสวยมาก ประทับใจสุด ๆ' },
+  { rating: 4, comment: 'ทริปดีมากครับ ราคาคุ้มค่า ไกด์เป็นมืออาชีพ อยากให้มีตัวเลือกอาหารมากกว่านี้ แต่โดยรวมชอบ' },
+  { rating: 5, comment: 'สุดยอดมากค่ะ ครั้งแรกที่มาแต่ไม่รู้สึกแปลกเลย ไกด์ดูแลดีมาก ทริปสนุกตลอด จะกลับมาจองซ้ำ' },
+  { rating: 4, comment: 'ดีมากครับ แต่อยากให้จุดนัดพบชัดเจนกว่านี้ เพราะหาที่จอดรถยากนิดหน่อย โดยรวมพอใจมาก' },
+  { rating: 5, comment: 'ประทับใจมากค่ะ ทัวร์คุ้มค่าคุ้มราคา ไกด์น่ารัก บรรยากาศดี อาหารครบ จะแนะนำเพื่อน ๆ แน่นอน' },
+  { rating: 5, comment: 'เที่ยวดีมากครับ ได้รูปสวยมาก ไกด์พาไปจุดที่ไม่รู้จัก วิวสวยมาก อาหารอร่อย ทริปน่าจดจำมาก' },
+  { rating: 3, comment: 'ทริปโอเคค่ะ แต่อากาศร้อนมากช่วงกลางวัน อยากให้มีร่มหรือพัดลมมากกว่านี้ที่จุดพักผ่อน' },
+  { rating: 4, comment: 'ชอบมากครับ ทริปไม่เหนื่อย ได้เที่ยวครบ ไกด์อธิบายประวัติศาสตร์ได้ดีมาก อาหารอร่อย คุ้มค่า' },
+  { rating: 5, comment: 'ดีมากเลยค่ะ สนุกสุด ๆ ไกด์เฮฮาและเป็นกันเองมาก ทริปสนุกตลอด ไม่มีช่วงน่าเบื่อเลย แนะนำ' },
+  { rating: 4, comment: 'ทริปดีครับ วิวสวย อากาศดี ไกด์ดูแลดี อยากให้เพิ่มเวลาที่จุดถ่ายรูปมากกว่านี้อีกนิด' },
+  { rating: 5, comment: 'สุดยอดมากค่ะ ไม่ผิดหวังเลยจากรีวิว ทริปดีกว่าที่คาดไว้ด้วยซ้ำ จะกลับมาจองทริปอื่นแน่นอน' },
+  { rating: 4, comment: 'ดีมากครับ ที่พักสะอาด อาหารอร่อย ไกด์ดูแลดี แต่อยากให้โปรแกรมยืดหยุ่นกว่านี้สักนิด' },
+  { rating: 5, comment: 'ประทับใจมากค่ะ ทริปน่าจดจำมาก ไกด์ดูแลทุกอย่างครบถ้วน ไม่ต้องกังวลอะไรเลย สนุกมาก' },
+  { rating: 5, comment: 'ดีมากเลยครับ ทริปครบทุกอย่างตามที่บอก อาหารอร่อย วิวสวย ไกด์เป็นกันเอง คุ้มค่ามาก' },
+  { rating: 4, comment: 'ทริปดีค่ะ ได้เที่ยวครบ แต่บางจุดผู้คนเยอะมาก คงเป็นช่วงไฮซีซัน โดยรวมยังพอใจ' },
+  { rating: 5, comment: 'เยี่ยมมากครับ ทริปสนุก ไกด์ดีมาก อาหารอร่อย ที่พักสวยมาก คุ้มค่าทุกบาทเลย' },
+  { rating: 5, comment: 'สุดยอดค่ะ ทุกอย่างลงตัวมาก ทริปสนุก ได้รูปสวย วิวสวยงาม ไกด์ดูแลดีมาก จะกลับมาอีก' },
+];
+
+// ─── Enriched customer data pool ─────────────────────────────────────────────
+export const ENRICHED_CUSTOMERS: {
+  name: string;
+  email: string;
+  phone: string;
+  prefix: 'นาย' | 'นาง' | 'นางสาว';
+}[] = [
+  { name: 'สมชาย ใจดี', email: 'somchai@test.com', phone: '0811111111', prefix: 'นาย' },
+  { name: 'สมหญิง จริงใจ', email: 'somying@test.com', phone: '0822222222', prefix: 'นางสาว' },
+  { name: 'วิชัย มีสุข', email: 'wichai@test.com', phone: '0833333333', prefix: 'นาย' },
+  { name: 'นภา สวัสดิ์', email: 'napa@test.com', phone: '0844444444', prefix: 'นางสาว' },
+  { name: 'ธนา พัฒนา', email: 'tana@test.com', phone: '0855555555', prefix: 'นาย' },
+  { name: 'มณี รักษ์', email: 'manee@test.com', phone: '0866666666', prefix: 'นาง' },
+  { name: 'ประเสริฐ ศรีสุข', email: 'prasert@test.com', phone: '0877777777', prefix: 'นาย' },
+  { name: 'กัญญา ดี', email: 'kanya@test.com', phone: '0888888888', prefix: 'นางสาว' },
+];
+
+// ─── Thai traveler names pool ─────────────────────────────────────────────────
+export const THAI_TRAVELER_NAMES: string[] = [
+  'สมชาย ใจดี', 'สมหญิง จริงใจ', 'วิชัย มีสุข', 'นภา สวัสดิ์',
+  'ธนา พัฒนา', 'มณี รักษ์', 'ประเสริฐ ศรีสุข', 'กัญญา ดี',
+  'อรุณ แสงสว่าง', 'มาลี ดอกไม้', 'สุรชัย วงศ์ทอง', 'ปิยะ ดีงาม',
+  'ลักษณา สุดสวย', 'ชัชวาล บุญมา', 'พิมพ์ใจ เรืองรอง', 'ศุภชัย จันทร์เพ็ญ',
+  'กนกวรรณ ทองดี', 'ณัฐพล แก้วมณี', 'วรรณา สุขสันต์', 'เอกชัย ปัญญาดี',
+];
+
+// ─── Special request pool ─────────────────────────────────────────────────────
+export const SPECIAL_REQUESTS: (string | null)[] = [
+  'ต้องการอาหารมังสวิรัติ',
+  'ต้องการอาหารฮาลาล',
+  'มีผู้สูงอายุร่วมเดินทาง ขอรถเข้าใกล้จุดขึ้นลง',
+  'มีเด็กเล็กอายุ 3 ขวบ ขอที่นั่งพิเศษในรถ',
+  'แพ้อาหารทะเล กรุณาแจ้งร้านอาหาร',
+  'ต้องการห้องพักชั้นล่าง (สำหรับทริปค้างคืน)',
+  null, null, null, null, // ส่วนมากไม่มี special request
+];
+
+// ─── Admin notes pool ─────────────────────────────────────────────────────────
+export const ADMIN_NOTES_POOL: string[] = [
+  'ลูกค้า VIP ดูแลเป็นพิเศษ',
+  'ตรวจสลิปแล้ว ยืนยันการชำระเงินเรียบร้อย',
+  'ลูกค้าโทรยืนยันการจองแล้ว',
+  'ส่ง SMS ยืนยันแล้ว',
+  'ตรวจสอบข้อมูลผู้เดินทางครบถ้วน',
+  'ลูกค้ามากับกลุ่มเพื่อน ดูแลเพิ่มเติม',
+];
+
+// ─── Notification templates ───────────────────────────────────────────────────
+export type NotificationSeedItem = {
+  type: 'booking_confirmed' | 'booking_success' | 'booking_canceled' | 'new_booking' | 'payment_uploaded';
+  title: string;
+  message: (tourName: string, bookingId: number, customerName?: string) => string;
+};
+
+export const NOTIFICATION_TEMPLATES: NotificationSeedItem[] = [
+  {
+    type: 'booking_confirmed',
+    title: 'การจองได้รับการยืนยัน ✅',
+    message: (tourName, bookingId) =>
+      `การจอง #${bookingId} ทริป "${tourName}" ได้รับการยืนยันจากทีมงานเรียบร้อยแล้ว กรุณาเตรียมตัวให้พร้อมก่อนวันเดินทาง`,
+  },
+  {
+    type: 'booking_success',
+    title: 'ทริปของคุณเสร็จสิ้นแล้ว 🎉',
+    message: (tourName, bookingId) =>
+      `ขอบคุณที่ใช้บริการ! ทริป "${tourName}" (การจอง #${bookingId}) เสร็จสิ้นแล้ว หากคุณพอใจ รบกวนฝากรีวิวให้เราด้วยนะคะ`,
+  },
+  {
+    type: 'booking_canceled',
+    title: 'การจองถูกยกเลิก ❌',
+    message: (tourName, bookingId) =>
+      `การจอง #${bookingId} ทริป "${tourName}" ถูกยกเลิกแล้ว หากมีข้อสงสัยกรุณาติดต่อทีมงาน`,
+  },
+  {
+    type: 'new_booking',
+    title: 'มีการจองใหม่เข้ามา 📋',
+    message: (tourName, bookingId, customerName) =>
+      `ลูกค้า ${customerName ?? 'ไม่ระบุ'} ได้ทำการจองทริป "${tourName}" (การจอง #${bookingId}) กรุณาตรวจสอบและยืนยันการจอง`,
+  },
+  {
+    type: 'payment_uploaded',
+    title: 'ลูกค้าอัปโหลดหลักฐานการชำระเงิน 💳',
+    message: (tourName, bookingId, customerName) =>
+      `ลูกค้า ${customerName ?? 'ไม่ระบุ'} อัปโหลดหลักฐานการชำระเงินสำหรับทริป "${tourName}" (การจอง #${bookingId}) กรุณาตรวจสอบและอนุมัติ`,
+  },
+];
+
+// ─── Behavior event types ────────────────────────────────────────────────────
+export const BEHAVIOR_EVENT_TYPES = [
+  { type: 'page_view', paths: ['/', '/tours', '/tours/1', '/tours/2', '/tours/3'] },
+  { type: 'tour_click', paths: ['/tours'] },
+  { type: 'booking_start', paths: ['/tours/1', '/tours/2', '/tours/3'] },
+  { type: 'search', paths: ['/tours'] },
+  { type: 'filter_change', paths: ['/tours'] },
+  { type: 'scroll_depth', paths: ['/tours/1', '/'] },
+];
+

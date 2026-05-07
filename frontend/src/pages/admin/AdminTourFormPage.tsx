@@ -367,28 +367,58 @@ export default function AdminTourFormPage() {
     setHighlights((prev) => updateHighlightAtIndex(prev, 1, value))
   }
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files?.length) return
-    const file = event.target.files[0]
+  const handleFilesSelected = async (files: File[]) => {
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    const validFiles = files.filter((file) => validTypes.includes(file.type))
 
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png']
-    if (!validTypes.includes(file.type)) {
-      toast.error('กรุณาแนบเฉพาะไฟล์ประเภท .jpg หรือ .png เท่านั้นครับ')
-      event.target.value = ''
+    if (validFiles.length === 0) {
+      toast.error('กรุณาเลือกไฟล์ประเภท JPG, PNG หรือ WebP เท่านั้น')
       return
     }
 
+    if (validFiles.length < files.length) {
+      toast('ไฟล์บางรายการไม่รองรับและถูกข้ามไป', { icon: '⚠️' })
+    }
+
+    setUploadingImage(true)
     try {
-      setUploadingImage(true)
-      const url = await tourService.uploadImage(file)
-      setImages((prev) => [...prev, url])
-    } catch (uploadError) {
-      console.error(uploadError)
-      toast.error('อัปโหลดรูปภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
+      const results = await Promise.allSettled(
+        validFiles.map((file) => tourService.uploadImage(file)),
+      )
+
+      const uploaded: string[] = []
+      let errorCount = 0
+
+      results.forEach((result, i) => {
+        if (result.status === 'fulfilled') {
+          uploaded.push(result.value)
+        } else {
+          errorCount++
+          console.error(`Upload failed for ${validFiles[i].name}:`, result.reason)
+        }
+      })
+
+      if (uploaded.length > 0) {
+        setImages((prev) => [...prev, ...uploaded])
+      }
+
+      if (errorCount > 0) {
+        toast.error(`อัปโหลดไม่สำเร็จ ${errorCount} รูป กรุณาลองใหม่อีกครั้ง`)
+      } else if (uploaded.length > 0) {
+        toast.success(`อัปโหลด ${uploaded.length} รูปสำเร็จ`)
+      }
     } finally {
       setUploadingImage(false)
-      event.target.value = ''
     }
+  }
+
+  const reorderImages = (from: number, to: number) => {
+    setImages((prev) => {
+      const next = [...prev]
+      const [moved] = next.splice(from, 1)
+      next.splice(to, 0, moved)
+      return next
+    })
   }
 
   const removeImage = (indexToRemove: number) => {
@@ -929,7 +959,13 @@ export default function AdminTourFormPage() {
                     <div className="mb-4">
                       <p className="mt-1 text-md text-gray-500">รูปแรกจะถูกใช้เป็นภาพหลักบนการ์ดทัวร์</p>
                     </div>
-                    <ImageUploadSection images={images} uploadingImage={uploadingImage} onImageUpload={handleImageUpload} onRemoveImage={removeImage} />
+                    <ImageUploadSection
+                      images={images}
+                      uploadingImage={uploadingImage}
+                      onFilesSelected={handleFilesSelected}
+                      onRemoveImage={removeImage}
+                      onReorder={reorderImages}
+                    />
                   </div>
 
                   <div className="mt-5 rounded-[1.5rem] border border-gray-100 bg-gray-50/40 p-4 md:p-5">
