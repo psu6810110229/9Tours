@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import TourCard from '../components/TourCard'
 import SearchBar from '../components/common/SearchBar'
@@ -216,6 +216,8 @@ export default function HomePage() {
   const [childrenCount, setChildrenCount] = useState(0)
   const [selectedCats, setSelectedCats] = useState<Set<string>>(new Set())
   const [selectedPlace, setSelectedPlace] = useState<Place>(PLACES[0])
+  const [inputFocused, setInputFocused] = useState(false)
+  const [debouncedSearch, setDebouncedSearch] = useState('')
 
   const placeScrollRef = useRef<HTMLDivElement>(null)
   const tourScrollRef = useRef<HTMLDivElement>(null)
@@ -229,6 +231,12 @@ export default function HomePage() {
       .catch(console.error)
       .finally(() => setToursLoading(false))
   }, [])
+
+  // Debounce search for suggestions
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 200)
+    return () => clearTimeout(timer)
+  }, [search])
 
   useEffect(() => {
     if (!user) {
@@ -261,20 +269,57 @@ export default function HomePage() {
 
   const canSubmitHeroSearch = search.trim().length > 0 || selectedCats.size > 0 || Boolean(tourType)
 
-  const handleSearch = () => {
+  // Client-side suggestion data (province groups + matching tours)
+  const suggestionData = useMemo(() => {
+    const q = debouncedSearch.trim().toLowerCase()
+    if (!q || tours.length === 0) return { provinces: [], tours: [] }
+    const matched = tours.filter((t) =>
+      t.name.toLowerCase().includes(q)
+      || t.province.toLowerCase().includes(q)
+      || t.region.toLowerCase().includes(q)
+      || t.categories.some((c) => c.toLowerCase().includes(q)),
+    )
+    const provinceMap = new Map<string, number>()
+    matched.forEach((t) => provinceMap.set(t.province, (provinceMap.get(t.province) ?? 0) + 1))
+    const provinces = Array.from(provinceMap.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3)
+    const tourSuggestions = [...matched]
+      .sort((a, b) => {
+        const aHit = a.name.toLowerCase().includes(q) ? 1 : 0
+        const bHit = b.name.toLowerCase().includes(q) ? 1 : 0
+        return bHit - aHit
+      })
+      .slice(0, 5)
+      .map((t) => ({ id: t.id, name: t.name, coverImage: t.images[0] ?? '', price: Number(t.price), province: t.province }))
+    return { provinces, tours: tourSuggestions }
+  }, [debouncedSearch, tours])
+
+  const showSuggestions = inputFocused
+    && debouncedSearch.trim().length > 0
+    && (suggestionData.provinces.length > 0 || suggestionData.tours.length > 0)
+
+  const handleSearch = useCallback(() => {
     const trimmedSearch = search.trim()
     if (!trimmedSearch && selectedCats.size === 0 && !tourType) return
-
     const params = new URLSearchParams()
-    if (trimmedSearch) {
-      params.set('search', trimmedSearch)
-    }
+    if (trimmedSearch) params.set('search', trimmedSearch)
     if (tourType) params.set('tourType', tourType)
-    if (selectedCats.size > 0) {
-      params.set('categories', [...selectedCats].join(','))
-    }
+    if (selectedCats.size > 0) params.set('categories', [...selectedCats].join(','))
     navigate(`/tours?${params.toString()}`)
-  }
+    setInputFocused(false)
+  }, [navigate, search, selectedCats, tourType])
+
+  const handleSelectSuggestionProvince = useCallback((province: string) => {
+    navigate(`/tours?province=${encodeURIComponent(province)}`)
+    setInputFocused(false)
+  }, [navigate])
+
+  const handleSelectSuggestionTour = useCallback((tourId: number) => {
+    navigate(`/tours/${tourId}`)
+    setInputFocused(false)
+  }, [navigate])
 
   const handlePlaceSelect = (place: Place) => {
     setSelectedPlace(place)
@@ -364,7 +409,7 @@ export default function HomePage() {
             <div className="mx-auto mt-4 max-w-4xl sm:mt-6">
               <SearchBar
                 search={search}
-                setSearch={setSearch}
+                setSearch={(v) => { setSearch(v); if (v.trim()) setInputFocused(true) }}
                 guests={guests}
                 setGuests={setGuests}
                 childrenCount={childrenCount}
@@ -376,6 +421,13 @@ export default function HomePage() {
                 transparent
                 tourType={tourType}
                 setTourType={setTourType}
+                suggestionProvinces={suggestionData.provinces}
+                suggestionTours={suggestionData.tours}
+                showSuggestions={showSuggestions}
+                onSelectSuggestionProvince={handleSelectSuggestionProvince}
+                onSelectSuggestionTour={handleSelectSuggestionTour}
+                onViewAllSuggestions={handleSearch}
+                onSuggestionsClose={() => setInputFocused(false)}
               />
             </div>
           </div>

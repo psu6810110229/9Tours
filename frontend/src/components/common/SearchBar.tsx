@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import SearchSuggestions, { type SuggestionProvince, type SuggestionTour } from './SearchSuggestions'
 
 export interface SearchBarProps {
   search: string
@@ -15,6 +16,14 @@ export interface SearchBarProps {
   tourType?: '' | 'one_day' | 'package'
   setTourType?: (value: '' | 'one_day' | 'package') => void
   transparent?: boolean
+  // Optional search-preview / autocomplete props (Hero only)
+  suggestionProvinces?: SuggestionProvince[]
+  suggestionTours?: SuggestionTour[]
+  showSuggestions?: boolean
+  onSelectSuggestionProvince?: (province: string) => void
+  onSelectSuggestionTour?: (tourId: number) => void
+  onViewAllSuggestions?: () => void
+  onSuggestionsClose?: () => void
 }
 
 const MIN_ADULTS = 1
@@ -107,11 +116,20 @@ export default function SearchBar({
   tourType,
   setTourType,
   transparent = false,
+  suggestionProvinces,
+  suggestionTours,
+  showSuggestions = false,
+  onSelectSuggestionProvince,
+  onSelectSuggestionTour,
+  onViewAllSuggestions,
+  onSuggestionsClose,
 }: SearchBarProps) {
   const [isGuestPickerOpen, setIsGuestPickerOpen] = useState(false)
   const [guestPickerPosition, setGuestPickerPosition] = useState<GuestPickerPosition | null>(null)
   const guestPickerRef = useRef<HTMLDivElement>(null)
   const guestTriggerRef = useRef<HTMLButtonElement>(null)
+  const searchContainerRef = useRef<HTMLDivElement>(null)
+  const [suggestionPos, setSuggestionPos] = useState<{ top: number; left: number; width: number } | null>(null)
 
   const hasChildrenPicker = typeof childrenCount === 'number' && typeof setChildrenCount === 'function'
   const hasTourTypePicker = typeof tourType === 'string' && typeof setTourType === 'function'
@@ -139,6 +157,30 @@ export default function SearchBar({
   const searchIconWrapperClasses = transparent ? 'h-8 w-8 sm:h-9 sm:w-9' : 'h-10 w-10'
   const searchInputClasses = transparent ? 'text-[13px] sm:text-[14px]' : 'text-[15px] sm:text-[15px]'
   const searchButtonClasses = transparent ? 'min-h-[38px] w-full rounded-[1rem] px-4 py-0 text-[14px] sm:w-auto sm:min-w-[90px] sm:rounded-[1.2rem] sm:py-1' : 'rounded-[1.35rem] px-5 py-3 text-[15px] sm:min-w-[140px]'
+
+  // Position the suggestions dropdown below the search bar container
+  useEffect(() => {
+    if (!showSuggestions) {
+      setSuggestionPos(null)
+      return
+    }
+    const update = () => {
+      const el = searchContainerRef.current
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      const vw = window.innerWidth
+      const width = Math.min(rect.width, vw - 24)
+      const left = Math.min(Math.max(12, rect.left), Math.max(12, vw - width - 12))
+      setSuggestionPos({ top: rect.bottom + 8, left, width })
+    }
+    update()
+    window.addEventListener('resize', update)
+    window.addEventListener('scroll', update, true)
+    return () => {
+      window.removeEventListener('resize', update)
+      window.removeEventListener('scroll', update, true)
+    }
+  }, [showSuggestions])
 
   useEffect(() => {
     if (!isGuestPickerOpen) return
@@ -259,9 +301,26 @@ export default function SearchBar({
     )
     : null
 
+  const hasSuggestions = (suggestionProvinces?.length ?? 0) > 0 || (suggestionTours?.length ?? 0) > 0
+
+  const suggestionPortal = showSuggestions && suggestionPos && hasSuggestions
+    ? createPortal(
+      <SearchSuggestions
+        query={search}
+        provinces={suggestionProvinces ?? []}
+        tours={suggestionTours ?? []}
+        onSelectProvince={onSelectSuggestionProvince ?? (() => undefined)}
+        onSelectTour={onSelectSuggestionTour ?? (() => undefined)}
+        onViewAll={onViewAllSuggestions ?? onSearch}
+        style={{ top: `${suggestionPos.top}px`, left: `${suggestionPos.left}px`, width: `${suggestionPos.width}px` }}
+      />,
+      document.body,
+    )
+    : null
+
   return (
     <>
-      <div className={`ui-surface mx-auto w-full max-w-4xl rounded-[1.5rem] border sm:rounded-[3rem] ${shellPaddingClasses} ${blurClasses} ${surfaceClasses} ${className}`.trim()}>
+      <div ref={searchContainerRef} className={`ui-surface mx-auto w-full max-w-4xl rounded-[1.5rem] border sm:rounded-[3rem] ${shellPaddingClasses} ${blurClasses} ${surfaceClasses} ${className}`.trim()}>
         <div className={`flex flex-col ${layoutGapClasses} lg:flex-row lg:items-stretch`.trim()}>
           {hasTourTypePicker && (
             <div className="lg:flex-shrink-0">
@@ -315,9 +374,14 @@ export default function SearchBar({
                 placeholder="ค้นหาทัวร์หรือสถานที่..."
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
+                onBlur={() => onSuggestionsClose?.()}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' && !searchDisabled) {
                     onSearch()
+                    onSuggestionsClose?.()
+                  }
+                  if (event.key === 'Escape') {
+                    onSuggestionsClose?.()
                   }
                 }}
                 className={`w-full min-w-0 bg-transparent font-semibold outline-none placeholder:font-medium ${searchInputClasses} ${inputToneClasses}`.trim()}
@@ -376,6 +440,7 @@ export default function SearchBar({
         </div>
       </div>
       {guestPicker}
+      {suggestionPortal}
     </>
   )
 }
