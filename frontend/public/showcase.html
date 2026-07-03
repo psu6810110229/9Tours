@@ -178,7 +178,6 @@
     margin:0 0 1.3rem;
     max-width:16ch;
   }
-  h1 em{ color:var(--accent-dark); font-style:normal; }
   h2{
     font-weight:700;
     font-size:clamp(2rem,3.4vw,2.9rem);
@@ -323,18 +322,50 @@
     color:var(--primary-dark);
   }
 
-  table{ border-collapse:collapse; width:100%; font-size:1.1rem; }
-  table caption{ text-align:left; caption-side:top; }
-  th,td{ text-align:left; padding:0.75rem 0.8rem 0.75rem 0; border-bottom:1px solid var(--border); }
-  th{
-    font-size:0.85rem;
-    font-weight:700;
-    letter-spacing:0.03em;
-    color:var(--text-muted);
-    text-transform:uppercase;
+  /* ---------- Funnel: กราฟแท่งแนวนอนแบบ funnel พร้อมแอนิเมชันเลื่อนเข้าจอ ---------- */
+  .funnel{
+    margin-top:2.5rem;
+    display:flex;
+    flex-direction:column;
+    gap:1.15rem;
   }
-  td.num{ font-family:var(--mono); font-variant-numeric:tabular-nums; font-weight:600; color:var(--accent-dark); }
-  .table-wrap{ overflow-x:auto; border:1px solid var(--border); border-radius:12px; padding:0 1rem; background:#fff; }
+  .funnel__row{
+    display:grid;
+    grid-template-columns:9.5rem 1fr;
+    align-items:center;
+    gap:1.1rem;
+  }
+  .funnel__label{ display:flex; flex-direction:column; gap:0.15rem; }
+  .funnel__label b{ font-size:1.02rem; font-weight:600; color:var(--text); }
+  .funnel__label small{ font-family:var(--mono); font-size:0.78rem; font-weight:600; color:var(--text-muted); }
+  .funnel__bar-wrap{ display:flex; align-items:center; gap:0.9rem; }
+  .funnel__track{
+    flex:1;
+    height:2.4rem;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  .funnel__fill{
+    height:100%;
+    width:0%;
+    border-radius:9px;
+    background:linear-gradient(90deg, var(--primary), var(--accent));
+    transition:width 1.3s cubic-bezier(.16,1,.3,1);
+  }
+  .funnel__count{ font-family:var(--mono); font-weight:700; color:var(--text); min-width:3ch; text-align:right; }
+  .funnel.in-view .funnel__fill{ width:var(--pct); }
+  .funnel__row:nth-child(1) .funnel__fill{ transition-delay:0ms; }
+  .funnel__row:nth-child(2) .funnel__fill{ transition-delay:130ms; }
+  .funnel__row:nth-child(3) .funnel__fill{ transition-delay:260ms; }
+  .funnel__row:nth-child(4) .funnel__fill{ transition-delay:390ms; }
+  @media (max-width:640px){
+    .funnel__row{ grid-template-columns:1fr; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .funnel__fill{ transition:none; }
+  }
 
   footer.close{ display:flex; flex-direction:column; gap:1.5rem; align-items:flex-start; }
   .cta{
@@ -452,9 +483,9 @@
 
     <section id="overview">
       <div class="section-inner">
-        <p class="kicker">เว็บจองทัวร์แบบครบวงจร</p>
-        <h1 id="hero-title"><span class="blur-word">ไม่ใช่</span> <span class="blur-word">mockup</span> <span class="blur-word">แต่เป็นเว็บที่<em>ใช้งานได้จริง</em></span></h1>
-        <p class="lede">จองทัวร์เที่ยววันเดียวทั่วภาคใต้ ตั้งแต่ดูทัวร์ เช็คที่นั่ง จ่ายเงิน ถึงหลังบ้านแอดมิน</p>
+        <p class="kicker">เว็บจองทัวร์ที่พัฒนาบนหลัก จอง จ่าย จบ</p>
+        <h1 id="hero-title"><span class="blur-word">9Tours</span> <span class="blur-word">เว็บไซต์</span> <span class="blur-word">จองทัวร์ออนไลน์</span></h1>
+        <p class="lede">จอง เจอ จ่าย ครบจบในที่เดียว</p>
         <div class="stack-loop" aria-label="เทคโนโลยีที่ใช้พัฒนา">
           <div class="stack-loop__track" id="stack-loop-track">
             <span class="stack-loop__item"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>React</title><path d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z"/></svg>React 19</span>
@@ -554,22 +585,54 @@
         <p class="kicker">ชุดข้อมูลจำลอง</p>
         <h2>แดชบอร์ดวิเคราะห์ข้อมูล (ตัวอย่าง)</h2>
         <p class="lede">หลังบ้านมีแดชบอร์ดยอดจอง จ่ายเงิน พฤติกรรมลูกค้า ตัวเลขด้านล่างคือ<strong>ข้อมูลจำลอง</strong> ไม่ใช่ยอดขายจริง</p>
-        <div class="table-wrap">
-          <table>
-            <caption class="kicker" style="margin-bottom:0.75rem;">ตัวชี้วัดจากชุดข้อมูลจำลอง</caption>
-            <thead>
-              <tr><th>ตัวชี้วัด</th><th>ค่า</th><th>คำนวณจาก</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>อัตราแปลงจากการดูเป็นการจอง</td><td class="num">26.7%</td><td>40 การจอง / 150 การดูทัวร์</td></tr>
-              <tr><td>อัตราโอนเงินหลังจอง</td><td class="num">75.0%</td><td>30 การจ่ายเงิน / 40 การจอง</td></tr>
-              <tr><td>อัตรายืนยันการโอนสำเร็จ</td><td class="num">66.7%</td><td>20 ที่ยืนยันแล้ว / 30 การจ่ายเงิน</td></tr>
-              <tr><td>การแจ้งเตือนต่อการจอง</td><td class="num">1.75</td><td>70 / 40</td></tr>
-              <tr><td>ทัวร์โปรดต่อผู้ใช้</td><td class="num">3.88</td><td>31 / 8</td></tr>
-            </tbody>
-          </table>
+
+        <div class="funnel" id="analytics-funnel" aria-label="กระบวนการแปลงจากดูทัวร์ถึงยืนยันจอง">
+          <div class="funnel__row" style="--pct:100%">
+            <div class="funnel__label"><b>ดูทัวร์</b><small>เริ่มต้น</small></div>
+            <div class="funnel__bar-wrap">
+              <div class="funnel__track"><div class="funnel__fill"></div></div>
+              <span class="funnel__count" data-count-to="150">0</span>
+            </div>
+          </div>
+          <div class="funnel__row" style="--pct:27%">
+            <div class="funnel__label"><b>จองสำเร็จ</b><small>26.7% จากคนดู</small></div>
+            <div class="funnel__bar-wrap">
+              <div class="funnel__track"><div class="funnel__fill"></div></div>
+              <span class="funnel__count" data-count-to="40">0</span>
+            </div>
+          </div>
+          <div class="funnel__row" style="--pct:20%">
+            <div class="funnel__label"><b>โอนเงินแล้ว</b><small>75% จากคนจอง</small></div>
+            <div class="funnel__bar-wrap">
+              <div class="funnel__track"><div class="funnel__fill"></div></div>
+              <span class="funnel__count" data-count-to="30">0</span>
+            </div>
+          </div>
+          <div class="funnel__row" style="--pct:13%">
+            <div class="funnel__label"><b>ยืนยันสำเร็จ</b><small>66.7% จากคนโอน</small></div>
+            <div class="funnel__bar-wrap">
+              <div class="funnel__track"><div class="funnel__fill"></div></div>
+              <span class="funnel__count" data-count-to="20">0</span>
+            </div>
+          </div>
         </div>
-        <div class="note"><strong>หมายเหตุ:</strong> ตัวเลขข้างต้นมาจาก <code>dashboard.seeder.ts</code> ชุดข้อมูลจำลองทัวร์ 30 รายการและการจอง 40 รายการ ใช้โชว์รูปแบบแดชบอร์ดเท่านั้น ไม่ใช่ยอดขายหรือการใช้งานจริง</div>
+
+        <div class="stat-grid" id="analytics-stats" style="margin-top:2.75rem;">
+          <div class="stat">
+            <span class="num" data-count-to="13.3" data-decimals="1" data-suffix="%">0</span>
+            <span class="label">อัตราแปลงรวม ดูทัวร์จนยืนยันจอง</span>
+          </div>
+          <div class="stat">
+            <span class="num" data-count-to="1.8" data-decimals="1">0</span>
+            <span class="label">แจ้งเตือนเฉลี่ยต่อการจอง (ครั้ง)</span>
+          </div>
+          <div class="stat">
+            <span class="num" data-count-to="3.9" data-decimals="1">0</span>
+            <span class="label">ทัวร์โปรดเฉลี่ยต่อผู้ใช้ (ทัวร์)</span>
+          </div>
+        </div>
+
+        <div class="note"><strong>หมายเหตุ:</strong> ตัวเลขข้างต้นมาจาก <code>dashboard.seeder.ts</code> ชุดข้อมูลจำลอง ใช้โชว์รูปแบบแดชบอร์ดเท่านั้น ไม่ใช่ยอดขายหรือการใช้งานจริง</div>
       </div>
       <footer class="close" style="margin-top:3.5rem;">
         <a class="cta" href="https://ninetours-frontend.onrender.com/" target="_blank" rel="noopener">เปิดเว็บเต็มจอ &rarr;</a>
@@ -650,7 +713,7 @@
     }
 
     // เลื่อน window หรือ iframe.contentWindow ไปที่ตำแหน่ง targetY แบบ smooth ช้า ๆ ให้อ่านทัน
-    function smoothScrollTo(win, targetY, token){
+    function smoothScrollTo(win, targetY, token, duration){
       return new Promise(function(resolve){
         if (token !== runToken || !win) return resolve(false);
         var startY;
@@ -658,12 +721,13 @@
         var clampedTarget = Math.max(0, targetY);
         var distance = clampedTarget - startY;
         if (Math.abs(distance) < 1) return resolve(true);
+        var dur = duration || SCROLL_DURATION;
         var startTime = null;
         var raf = win.requestAnimationFrame || window.requestAnimationFrame;
         function step(ts){
           if (token !== runToken) return resolve(false);
           if (startTime === null) startTime = ts;
-          var t = Math.min(1, (ts - startTime) / SCROLL_DURATION);
+          var t = Math.min(1, (ts - startTime) / dur);
           try { win.scrollTo(0, startY + distance * easeInOutCubic(t)); }
           catch (e) { return resolve(false); }
           if (t < 1) raf(step);
@@ -671,6 +735,13 @@
         }
         raf(step);
       });
+    }
+
+    // ระยะเลื่อนใน iframe อาจยาวไม่เท่ากันแต่ละหน้า คิดเวลาตามระยะทางให้ความเร็วสม่ำเสมอ อ่านทัน
+    function devicePreviewDuration(distance){
+      var pxPerSecond = 220;
+      var ms = Math.abs(distance) / pxPerSecond * 1000;
+      return Math.max(2200, Math.min(6000, ms));
     }
 
     async function playDeviceSection(section, token){
@@ -702,10 +773,11 @@
       } catch (e) { maxY = 0; } // ข้ามโดเมน: เลื่อนภายใน iframe ไม่ได้ ก็แค่ข้าม
 
       if (maxY > 40) {
-        // 2) เลื่อน demo ลงสุด แล้ว 3) เลื่อนกลับขึ้นบนสุด
-        if (await smoothScrollTo(iframeWin, maxY, token)) {
+        // 2) เลื่อน demo ลงสุดช้า ๆ แล้ว 3) เลื่อนกลับขึ้นบนสุดด้วยความเร็วเท่ากัน
+        var previewDuration = devicePreviewDuration(maxY);
+        if (await smoothScrollTo(iframeWin, maxY, token, previewDuration)) {
           await wait(HOLD, token);
-          if (token === runToken) await smoothScrollTo(iframeWin, 0, token);
+          if (token === runToken) await smoothScrollTo(iframeWin, 0, token, previewDuration);
         }
       }
       await wait(HOLD, token);
@@ -791,6 +863,53 @@
       });
     }, { threshold: 0.1 });
     io.observe(title);
+  })();
+
+  /* Funnel + Stat: แท่งกราฟและตัวเลขนับขึ้นเมื่อเลื่อนเข้ามาในจอ */
+  (function(){
+    var funnel = document.getElementById('analytics-funnel');
+    var statGrid = document.getElementById('analytics-stats');
+    if (!funnel && !statGrid) return;
+    var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function animateCount(el){
+      var target = parseFloat(el.getAttribute('data-count-to'));
+      if (isNaN(target)) return;
+      var decimals = parseInt(el.getAttribute('data-decimals') || '0', 10);
+      var suffix = el.getAttribute('data-suffix') || '';
+      if (reducedMotion) { el.textContent = target.toFixed(decimals) + suffix; return; }
+      var duration = 1400;
+      var startTime = null;
+      function step(ts){
+        if (startTime === null) startTime = ts;
+        var t = Math.min(1, (ts - startTime) / duration);
+        var eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = (target * eased).toFixed(decimals) + suffix;
+        if (t < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    function reveal(el){
+      if (!el || el.classList.contains('in-view')) return;
+      el.classList.add('in-view');
+      Array.prototype.slice.call(el.querySelectorAll('[data-count-to]')).forEach(animateCount);
+    }
+
+    if (!('IntersectionObserver' in window)) {
+      reveal(funnel);
+      reveal(statGrid);
+      return;
+    }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (!entry.isIntersecting) return;
+        reveal(entry.target);
+        io.unobserve(entry.target);
+      });
+    }, { threshold: 0.3 });
+    if (funnel) io.observe(funnel);
+    if (statGrid) io.observe(statGrid);
   })();
 
   /* DotField: กริดจุดพื้นหลังโต้ตอบเมาส์ทั่วทั้งหน้า โป่งตามเมาส์ */
