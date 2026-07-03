@@ -1,0 +1,79 @@
+databases:
+  - name: 9tours-db
+    plan: free
+
+services:
+  # ---------- Backend (NestJS, Docker) ----------
+  - type: web
+    name: 9tours-backend
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /tours
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: DB_HOST
+        fromDatabase: { name: 9tours-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: 9tours-db, property: port }
+      - key: DB_USERNAME
+        fromDatabase: { name: 9tours-db, property: user }
+      - key: DB_PASSWORD
+        fromDatabase: { name: 9tours-db, property: password }
+      - key: DB_DATABASE
+        fromDatabase: { name: 9tours-db, property: database }
+      - key: DB_SYNCHRONIZE
+        value: "false"
+      - key: DB_SSL
+        value: "false"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ACCESS_TOKEN_TTL
+        value: 15m
+      - key: FRONTEND_URL
+        value: https://9tours-frontend.onrender.com
+      - key: CORS_ORIGINS
+        value: https://9tours-frontend.onrender.com
+      - key: BACKEND_PUBLIC_URL
+        value: https://9tours-frontend.onrender.com/api
+      - key: UPLOADS_ROOT
+        value: /app/uploads
+      - key: MAIL_ENABLED
+        value: "false"
+      - key: ENABLE_TOUR_JSON_IMPORT
+        value: "false"
+      - key: ENABLE_DEMO_DASHBOARD_SEED
+        value: "false"
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALLBACK_URL
+        value: https://9tours-frontend.onrender.com/api/auth/google/callback
+
+  # ---------- Frontend (Vite static site + proxy rewrites) ----------
+  - type: web
+    name: 9tours-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci --legacy-peer-deps && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: /api
+      - key: VITE_TRACKING_ENABLED
+        value: "true"
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://9tours-backend.onrender.com/*
+      - type: rewrite
+        source: /uploads/*
+        destination: https://9tours-backend.onrender.com/uploads/*
+      - type: rewrite
+        source: /*
+        destination: /index.html
