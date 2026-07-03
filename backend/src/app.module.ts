@@ -36,6 +36,9 @@ import { validateEnv } from './config/env.validation';
         database: configService.get<string>('DB_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: configService.get<boolean>('DB_SYNCHRONIZE') ?? false,
+        ssl: configService.get<string>('DB_SSL') === 'true'
+          ? { rejectUnauthorized: false }
+          : false,
       }),
     }),
 
