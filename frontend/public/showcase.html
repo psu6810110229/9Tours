@@ -550,6 +550,148 @@
       frames.forEach(function(frame){ ro.observe(frame); });
     }
   })();
+
+  /* โหมดคีออสก์: ไม่มีคนขยับเมาส์ -> เลื่อนหน้าลงเองพร้อมโชว์ demo แล้ววนซ้ำ */
+  (function(){
+    var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) return;
+
+    var main = document.querySelector('main.content');
+    if (!main) return;
+    var sections = Array.prototype.slice.call(main.querySelectorAll(':scope > section'));
+    if (!sections.length) return;
+    var subnav = document.getElementById('subnav');
+
+    var IDLE_DELAY = 3200;
+    var HOLD = 900;
+    var POLL_MS = 80;
+    var MAX_POLLS = 60;
+
+    var idleTimer = null;
+    var runToken = 0;
+    var running = false;
+
+    function wait(ms, token){
+      return new Promise(function(resolve){
+        setTimeout(function(){ resolve(token === runToken); }, ms);
+      });
+    }
+
+    function subnavHeight(){
+      return subnav ? subnav.getBoundingClientRect().height : 0;
+    }
+
+    // เลื่อน window หรือ iframe.contentWindow ไปที่ตำแหน่ง targetY แบบ smooth แล้วรอจนนิ่ง
+    function smoothScrollTo(win, targetY, token){
+      return new Promise(function(resolve){
+        if (token !== runToken || !win) return resolve(false);
+        try { win.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' }); }
+        catch (e) { return resolve(false); }
+        var last = null, stable = 0, tries = 0;
+        var iv = setInterval(function(){
+          if (token !== runToken) { clearInterval(iv); return resolve(false); }
+          var cur;
+          try { cur = win.scrollY; } catch (e) { clearInterval(iv); return resolve(false); }
+          if (last !== null && Math.abs(cur - last) < 1) stable++; else stable = 0;
+          last = cur;
+          tries++;
+          if (stable >= 3 || tries > MAX_POLLS) { clearInterval(iv); resolve(token === runToken); }
+        }, POLL_MS);
+      });
+    }
+
+    async function playDeviceSection(section, token){
+      var device = section.querySelector('.device');
+      var iframe = section.querySelector('.device-frame iframe');
+      if (!device) { await wait(HOLD, token); return; }
+
+      // 1) เลื่อนหน้าให้กรอบ demo โผล่เต็ม ๆ ไม่ถูกตัดขอบ
+      var rect = device.getBoundingClientRect();
+      var targetY = window.scrollY + rect.top - subnavHeight() - 18;
+      if (!(await smoothScrollTo(window, targetY, token))) return;
+      await wait(HOLD, token);
+      if (token !== runToken) return;
+
+      rect = device.getBoundingClientRect();
+      var fullyVisible = rect.top >= subnavHeight() - 2 && rect.bottom <= window.innerHeight + 2;
+      if (!fullyVisible || !iframe) { await wait(HOLD, token); return; }
+
+      var iframeWin;
+      try { iframeWin = iframe.contentWindow; } catch (e) { iframeWin = null; }
+      if (!iframeWin) { await wait(HOLD, token); return; }
+
+      var maxY = 0;
+      try {
+        var doc = iframe.contentDocument;
+        if (doc && doc.documentElement) {
+          maxY = Math.max(0, doc.documentElement.scrollHeight - doc.documentElement.clientHeight);
+        }
+      } catch (e) { maxY = 0; } // ข้ามโดเมน: เลื่อนภายใน iframe ไม่ได้ ก็แค่ข้าม
+
+      if (maxY > 40) {
+        // 2) เลื่อน demo ลงสุด แล้ว 3) เลื่อนกลับขึ้นบนสุด
+        if (await smoothScrollTo(iframeWin, maxY, token)) {
+          await wait(HOLD, token);
+          if (token === runToken) await smoothScrollTo(iframeWin, 0, token);
+        }
+      }
+      await wait(HOLD, token);
+    }
+
+    async function runLoop(token){
+      while (token === runToken) {
+        for (var i = 0; i < sections.length; i++) {
+          if (token !== runToken) return;
+          var section = sections[i];
+          var rect = section.getBoundingClientRect();
+          var targetY = window.scrollY + rect.top - subnavHeight();
+          if (!(await smoothScrollTo(window, targetY, token))) return;
+          if (section.querySelector('.device-frame iframe')) {
+            await playDeviceSection(section, token);
+          } else {
+            await wait(HOLD, token);
+          }
+          if (token !== runToken) return;
+        }
+        // ชนขอบล่างสุดของคอลัมน์ขวา -> รีเซ็ตกลับบนสุดแล้ววนใหม่ทั้งหมด
+        await wait(HOLD, token);
+        if (!(await smoothScrollTo(window, 0, token))) return;
+        await wait(HOLD, token);
+      }
+    }
+
+    function stopLoop(){
+      runToken++;
+      running = false;
+    }
+
+    function startLoop(){
+      if (running) return;
+      running = true;
+      var token = runToken;
+      runLoop(token).then(function(){ if (token === runToken) running = false; });
+    }
+
+    function resetIdleTimer(){
+      stopLoop();
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(startLoop, IDLE_DELAY);
+    }
+
+    // ใด ๆ ที่นับเป็น "แตะเมาส์/คีย์บอร์ด" ให้หยุดวนแล้วเริ่มนับถอยหลังใหม่
+    // ไม่ฟัง 'scroll' เพราะการเลื่อนอัตโนมัติของสคริปต์เองก็ยิง scroll event เหมือนกัน (จะกลายเป็นหยุดตัวเอง)
+    ['mousemove', 'mousedown', 'wheel', 'touchstart', 'touchmove', 'keydown'].forEach(function(evt){
+      window.addEventListener(evt, resetIdleTimer, { passive: true });
+    });
+    // โฟกัสหลุดไปที่ iframe (คนคลิกเข้าไปเล่น demo เอง) ก็ถือว่ามีคนใช้งานอยู่
+    window.addEventListener('blur', resetIdleTimer);
+    document.addEventListener('visibilitychange', function(){
+      if (document.hidden) { stopLoop(); if (idleTimer) clearTimeout(idleTimer); }
+      else resetIdleTimer();
+    });
+
+    resetIdleTimer();
+  })();
 </script>
 </body>
 </html>
