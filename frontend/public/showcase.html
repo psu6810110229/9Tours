@@ -257,15 +257,19 @@
     width:100%;
     aspect-ratio:16/10;
     background:var(--surface);
+    overflow:hidden;
   }
+  /* ฝัง iframe ที่ความกว้างจอเดสก์ท็อปจริง (1440x900 = 16:10) แล้วย่อด้วย transform
+     เพื่อให้เว็บที่ฝังมาโชว์เลย์เอาต์เดสก์ท็อป ไม่ใช่เมนูมือถือ */
   .device-frame iframe{
     position:absolute;
-    inset:0;
-    display:block;
-    width:100%;
-    height:100%;
+    top:0;
+    left:0;
+    width:1440px;
+    height:900px;
     border:0;
     background:#fff;
+    transform-origin:0 0;
   }
 
   .features{
@@ -525,6 +529,26 @@
       });
     }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
     sections.forEach(function(s){ if (s) io.observe(s); });
+  })();
+
+  (function(){
+    var DESKTOP_WIDTH = 1440;
+    var frames = Array.prototype.slice.call(document.querySelectorAll('.device-frame'));
+    function sizeFrames(){
+      frames.forEach(function(frame){
+        var iframe = frame.querySelector('iframe');
+        if (!iframe) return;
+        var scale = frame.clientWidth / DESKTOP_WIDTH;
+        iframe.style.transform = 'scale(' + scale + ')';
+      });
+    }
+    sizeFrames();
+    window.addEventListener('resize', sizeFrames);
+    window.addEventListener('load', sizeFrames);
+    if ('ResizeObserver' in window) {
+      var ro = new ResizeObserver(sizeFrames);
+      frames.forEach(function(frame){ ro.observe(frame); });
+    }
   })();
 </script>
 </body>
