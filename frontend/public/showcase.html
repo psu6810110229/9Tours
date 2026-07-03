@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>9Tours — ดูให้เห็นของจริง</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --ink:#0D1B1E;
+    --panel:#132628;
+    --panel-2:#0F2022;
+    --brass:#D3A54D;
+    --sea:#4FA9A0;
+    --paper:#EFE9DC;
+    --mute:#93A6A3;
+    --hair:rgba(239,233,220,0.12);
+    --display: "Arial Black", "Segoe UI Black", "Leelawadee UI", "Helvetica Neue", Arial, sans-serif;
+    --body: "Leelawadee UI", "Thonburi", Georgia, "Tahoma", sans-serif;
+    --mono: "Consolas", "Leelawadee UI", "SFMono-Regular", Menlo, Monaco, monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important}
+  }
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--paper);
+    font-family:var(--body);
+    font-size:1rem;
+    line-height:1.75;
+  }
+  a{color:var(--sea)}
+  .layout{
+    display:grid;
+    grid-template-columns:minmax(280px,36vw) 1fr;
+    min-height:100vh;
+  }
+
+  /* ---------- ซ้าย: แผง QR ที่ปักหมุดอยู่กับที่ ---------- */
+  .rail{
+    position:sticky;
+    top:0;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:1.75rem;
+    padding:2.5rem;
+    background:
+      radial-gradient(60% 50% at 50% 30%, rgba(211,165,77,0.16), transparent 70%),
+      radial-gradient(70% 60% at 50% 85%, rgba(79,169,160,0.14), transparent 70%),
+      var(--panel-2);
+    border-right:1px solid var(--hair);
+    overflow:hidden;
+  }
+  .rail::before{
+    content:"";
+    position:absolute;
+    inset:-20%;
+    background:conic-gradient(from 0deg at 50% 50%, rgba(211,165,77,0.08), rgba(79,169,160,0.06), rgba(211,165,77,0.08));
+    animation:drift 40s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes drift{ to{ transform:rotate(360deg); } }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:0.7rem;
+    letter-spacing:0.1em;
+    color:var(--mute);
+    z-index:1;
+  }
+  .status-dot{
+    display:inline-block;
+    width:0.45em;
+    height:0.45em;
+    border-radius:50%;
+    background:var(--sea);
+    margin-right:0.5em;
+    box-shadow:0 0 0 3px rgba(79,169,160,0.2);
+  }
+  .qr-frame{
+    position:relative;
+    z-index:1;
+    padding:1.1rem;
+    background:var(--paper);
+    border-radius:4px;
+    box-shadow:0 1.5rem 3rem -1rem rgba(0,0,0,0.55), 0 0 0 1px rgba(211,165,77,0.35);
+  }
+  .qr-frame img{
+    display:block;
+    width:min(46vw, 260px);
+    height:auto;
+    image-rendering:pixelated;
+  }
+  .rail-title{
+    z-index:1;
+    font-family:var(--display);
+    font-weight:900;
+    font-size:clamp(1.4rem,2.2vw,1.9rem);
+    text-align:center;
+    text-wrap:balance;
+    margin:0;
+  }
+  .rail-url{
+    z-index:1;
+    font-family:var(--mono);
+    font-size:0.85rem;
+    color:var(--brass);
+    text-align:center;
+    word-break:break-all;
+    text-decoration:none;
+    border-bottom:1px solid rgba(211,165,77,0.4);
+    padding-bottom:0.15rem;
+  }
+  .rail-caption{
+    z-index:1;
+    font-size:0.9rem;
+    color:var(--mute);
+    text-align:center;
+    max-width:26ch;
+    margin:0;
+  }
+
+  /* ---------- ขวา: เนื้อหาเลื่อนดูได้ ---------- */
+  .content{ min-width:0; }
+  .subnav{
+    position:sticky;
+    top:0;
+    z-index:5;
+    display:flex;
+    gap:1.4rem;
+    padding:1.1rem 3rem;
+    background:rgba(13,27,30,0.9);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--hair);
+    overflow-x:auto;
+  }
+  .subnav a{
+    font-family:var(--mono);
+    font-size:0.78rem;
+    text-decoration:none;
+    color:var(--mute);
+    white-space:nowrap;
+    padding-bottom:0.35rem;
+    border-bottom:2px solid transparent;
+    transition:color 0.2s, border-color 0.2s;
+  }
+  .subnav a.active{ color:var(--brass); border-color:var(--brass); }
+
+  section{
+    padding:5rem 3rem;
+    border-bottom:1px solid var(--hair);
+  }
+  section:last-child{ border-bottom:none; }
+  .section-inner{ max-width:60ch; }
+  .section-inner.wide{ max-width:none; }
+
+  .kicker{
+    font-family:var(--mono);
+    font-size:0.75rem;
+    letter-spacing:0.06em;
+    color:var(--sea);
+    margin:0 0 0.9rem;
+  }
+  h1{
+    font-family:var(--display);
+    font-weight:900;
+    font-size:clamp(2rem,3.6vw,3.2rem);
+    line-height:1.2;
+    text-wrap:balance;
+    margin:0 0 1.1rem;
+    max-width:18ch;
+  }
+  h1 em{ color:var(--brass); font-style:normal; }
+  h2{
+    font-family:var(--display);
+    font-weight:900;
+    font-size:clamp(1.35rem,2.1vw,1.8rem);
+    text-wrap:balance;
+    margin:0 0 1.1rem;
+  }
+  p{ margin:0 0 1.1rem; color:var(--paper); }
+  p.lede{ font-size:1.1rem; color:var(--mute); }
+  .tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0.5rem;
+    margin-top:1.5rem;
+  }
+  .tag{
+    font-family:var(--mono);
+    font-size:0.72rem;
+    padding:0.4rem 0.7rem;
+    border:1px solid var(--hair);
+    border-radius:3px;
+    color:var(--mute);
+  }
+
+  /* คู่ ข้อความ + เว็บจริงที่ฝังมา */
+  .demo{
+    display:grid;
+    grid-template-columns:minmax(240px,0.85fr) 1.15fr;
+    gap:2.5rem;
+    align-items:start;
+  }
+  .demo .section-inner{ max-width:46ch; }
+  .device{
+    background:var(--panel);
+    border:1px solid var(--hair);
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 1.5rem 3rem -1.5rem rgba(0,0,0,0.6);
+  }
+  .device-bar{
+    display:flex;
+    align-items:center;
+    gap:0.9rem;
+    padding:0.6rem 0.9rem;
+    background:var(--panel-2);
+    border-bottom:1px solid var(--hair);
+  }
+  .device-dots{ display:flex; gap:0.35rem; }
+  .device-dots span{
+    width:0.55rem; height:0.55rem; border-radius:50%;
+    background:var(--hair);
+  }
+  .device-url{
+    font-family:var(--mono);
+    font-size:0.72rem;
+    color:var(--mute);
+    background:var(--ink);
+    border-radius:3px;
+    padding:0.2rem 0.6rem;
+    flex:1;
+    text-align:center;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .device iframe{
+    display:block;
+    width:100%;
+    height:520px;
+    border:0;
+    background:var(--paper);
+  }
+
+  .features{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:1px;
+    background:var(--hair);
+    border:1px solid var(--hair);
+    margin-top:2rem;
+  }
+  .feature{ background:var(--panel); padding:1.5rem 1.6rem; }
+  .feature h3{
+    font-family:var(--display);
+    font-size:0.95rem;
+    margin:0 0 0.5rem;
+  }
+  .feature p{ font-size:0.9rem; color:var(--mute); margin:0; }
+
+  .stat-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:1.75rem 2rem;
+  }
+  .stat{ border-top:1px solid var(--hair); padding-top:0.8rem; }
+  .stat .num{
+    font-family:var(--mono);
+    font-variant-numeric:tabular-nums;
+    font-size:2rem;
+    font-weight:700;
+    color:var(--brass);
+    display:block;
+    line-height:1;
+  }
+  .stat .label{ font-size:0.82rem; color:var(--mute); display:block; margin-top:0.4rem; }
+
+  .note{
+    margin-top:2rem;
+    padding:1rem 1.2rem;
+    border-left:2px solid var(--sea);
+    background:rgba(79,169,160,0.06);
+    font-size:0.9rem;
+    color:var(--mute);
+  }
+  .note strong{ color:var(--paper); }
+
+  table{ border-collapse:collapse; width:100%; font-size:0.92rem; }
+  table caption{ text-align:left; caption-side:top; }
+  th,td{ text-align:left; padding:0.55rem 0.8rem 0.55rem 0; border-bottom:1px solid var(--hair); }
+  th{
+    font-family:var(--mono);
+    font-size:0.72rem;
+    color:var(--mute);
+    font-weight:400;
+  }
+  td.num{ font-family:var(--mono); font-variant-numeric:tabular-nums; color:var(--brass); }
+  .table-wrap{ overflow-x:auto; }
+
+  footer.close{ display:flex; flex-direction:column; gap:1.5rem; align-items:flex-start; }
+  .cta{
+    display:inline-flex;
+    align-items:center;
+    gap:0.6rem;
+    font-family:var(--display);
+    font-weight:900;
+    font-size:1rem;
+    color:var(--ink);
+    background:var(--brass);
+    padding:0.85rem 1.5rem;
+    border-radius:3px;
+    text-decoration:none;
+  }
+  .credit{ font-size:0.82rem; color:var(--mute); }
+
+  @media (max-width:900px){
+    .demo{ grid-template-columns:1fr; }
+    .device iframe{ height:420px; }
+  }
+  @media (max-width:820px){
+    .layout{ grid-template-columns:1fr; }
+    .rail{ position:relative; height:auto; padding:3rem 1.5rem; }
+    section{ padding:3.5rem 1.5rem; }
+    .subnav{ padding:1rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <aside class="rail">
+    <span class="eyebrow"><span class="status-dot" aria-hidden="true"></span>เปิดใช้งานอยู่ตอนนี้</span>
+    <div class="qr-frame">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAJYAQMAAACEqAqfAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAC0ElEQVR4nO3cMZLjIBCFYVwOFOoIOgpHk4+mo+gIDieYMrs0DTTIW7W1NQFr/peMJcHnybpokJ37weyhzyM9uIVwOhfClw704SV/Zczh7pd5LywsLCysoa08WLJGa4mDk+XixSPOPFyTuz7O8VhYWFhYc1leS4laJlKH9vCtdWjVgUeybnr5hYWFhYX1P1qLXp66ygjRkpXIs6xEsLCwsLCwrOVqh0rXHTn/VNOwsLCwsD7Rcnaw1qHf1hZMjjJmKZYJFhYWFtboVp9mj+Las6pWFywsLCysWaw/xOsAudhTzypFbh/vZ2FhYWFhDWvtwaQ2kvK6w5UNC0neo/BR37SaaLHBwsLCwprFug7WLlZed4Sya2FS1x3PUrheWFhYWFjTWK6UFVOH6nsUztaqPFOyXe5gYWFhYQ1r6bhs9dE9Ckl+j6KuO1L6NQwWFhYW1odbkuZRzVnWHXetTFJ17MyiOywsLCysaaw9fj6Mm3tWOYt9s2K9fJ/tWWFhYWFhjWzJzPxaRL+/XdN8Xzeh1A4sLCwsrDmsnNMO9eVsVB1j6pDub+dXJ9r+FxYWFhbWgJamrx2H/n5Gfdzdybn0rLCwsLCwPt7a08zmaOuiF+ffnYWVpYvpf2FhYWFhfbxlCpI+b0rUUqb3+9ubtWKwsLCwsIa3Uimogo+XZ1s7Us+q71AZHQsLCwtrIsuXH3Nay2sR/W/7Oa1Doc3TbIdgYWFhYc1hvYvpWdV4vWnr0M2qWFhYWFgjW3vo8yiWxCxLau040ob4zY5xWFhYWFjTWPohZdUOlWS7nKuVNHXI7oBgYWFhYQ1uea0Btc8U7HsU9Sxsc9xJ8qZnhYWFhYU1qxV0j0LyfTkLm7OWe1hYWFhY01tmxaLTcx2S3EObqGNhYWFhDW7VvK0dD/tYcz0AhYWFhYU1j9VHHzVnYXOeeseny1Sryr+DhYWFhTWH9YP5BWfbxXqcw3BnAAAAAElFTkSuQmCC" alt="QR โค้ดลิงก์เข้าเว็บ 9Tours">
+    </div>
+    <p class="rail-title">สแกนแล้วเข้าเว็บได้เลย</p>
+    <a class="rail-url" href="https://ninetours-frontend.onrender.com/" target="_blank" rel="noopener">ninetours-frontend.onrender.com</a>
+    <p class="rail-caption">จองทัวร์จริง เช็คที่นั่งว่างแบบเรียลไทม์ จ่ายเงินผ่าน PromptPay ได้จริง</p>
+  </aside>
+
+  <main class="content">
+    <nav class="subnav" id="subnav">
+      <a href="#overview" data-idx="0">ภาพรวม</a>
+      <a href="#browse" data-idx="1">ดูทัวร์จริง</a>
+      <a href="#booking" data-idx="2">จองที่นั่งจริง</a>
+      <a href="#how-it-works" data-idx="3">ระบบด้านหลัง</a>
+      <a href="#architecture" data-idx="4">เบื้องหลังเทคนิค</a>
+      <a href="#analytics" data-idx="5">ข้อมูลตัวอย่าง</a>
+    </nav>
+
+    <section id="overview">
+      <div class="section-inner">
+        <p class="kicker">เว็บจองทัวร์แบบครบวงจร</p>
+        <h1>ไม่ใช่ mockup แต่เป็นเว็บที่<em>ใช้งานได้จริง</em></h1>
+        <p class="lede">9Tours คือระบบจองทัวร์เที่ยววันเดียวทั่วภาคใต้ ตั้งแต่หน้าที่ลูกค้าดูทัวร์ เช็คที่นั่ง จ่ายเงิน ไปจนถึงหลังบ้านที่แอดมินจัดการเอง</p>
+        <p>ตั้งแต่หัวข้อถัดไป ฝั่งขวามือจะเป็นเว็บจริงที่ฝังมาให้เลื่อนเล่นได้เลยตอนนี้ ไม่ใช่ภาพหน้าจอ</p>
+        <div class="tags">
+          <span class="tag">NestJS + TypeORM</span>
+          <span class="tag">React 19 + Vite</span>
+          <span class="tag">PostgreSQL</span>
+          <span class="tag">Docker</span>
+          <span class="tag">ขึ้นระบบบน Render</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="browse">
+      <div class="demo">
+        <div class="section-inner">
+          <p class="kicker">หน้ารายการทัวร์ของจริง</p>
+          <h2>ลองเลื่อนดูทัวร์ที่เปิดขายอยู่ตอนนี้</h2>
+          <p>กรอบด้านขวาคือหน้าเว็บจริง ลองเลื่อนเมาส์หรือปัดนิ้วในกรอบดูได้เลย ตอนนี้มีทัวร์เปิดขายอยู่ 12 ทัวร์ทั่วภาคใต้ กรองตามภูมิภาค ราคา และหมวดหมู่ได้</p>
+        </div>
+        <div class="device">
+          <div class="device-bar">
+            <span class="device-dots"><span></span><span></span><span></span></span>
+            <span class="device-url">ninetours-frontend.onrender.com/tours</span>
+          </div>
+          <iframe src="https://ninetours-frontend.onrender.com/tours" title="หน้ารายการทัวร์ของเว็บ 9Tours จริง" loading="lazy"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <section id="booking">
+      <div class="demo">
+        <div class="section-inner">
+          <p class="kicker">หน้ารายละเอียดทัวร์</p>
+          <h2>เช็คที่นั่งว่างแบบเรียลไทม์</h2>
+          <p>พอกดเข้าไปดูทัวร์ จะเห็นรอบวันที่จริงที่ยังจองได้ พร้อมจำนวนที่นั่งที่เหลือ ระบบหักที่นั่งทันทีตอนมีคนจอง จองซ้ำจนที่นั่งเต็มไม่ได้แน่นอน</p>
+        </div>
+        <div class="device">
+          <div class="device-bar">
+            <span class="device-dots"><span></span><span></span><span></span></span>
+            <span class="device-url">ninetours-frontend.onrender.com/tours/1</span>
+          </div>
+          <iframe src="https://ninetours-frontend.onrender.com/tours/1" title="หน้ารายละเอียดทัวร์พร้อมรอบจองของเว็บ 9Tours จริง" loading="lazy"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <section id="how-it-works">
+      <div class="section-inner wide">
+        <p class="kicker">ตอนกดจองจริง ๆ เกิดอะไรขึ้น</p>
+        <h2>จ่ายเงินและระบบหลังบ้าน</h2>
+        <p>เพราะการจองต้องล็อกอินก่อน หน้าจ่ายเงินกับหลังบ้านแอดมินเลยโชว์ผ่านกรอบฝังไม่ได้ แต่ทำงานจริงตามนี้:</p>
+        <div class="features">
+          <div class="feature">
+            <h3>ล็อกอินง่าย</h3>
+            <p>สมัครด้วยอีเมลหรือกดเข้าสู่ระบบด้วย Google ก็ได้</p>
+          </div>
+          <div class="feature">
+            <h3>จ่ายด้วย PromptPay</h3>
+            <p>ระบบสร้าง QR PromptPay ให้สแกนจ่ายจริง แล้วอัปโหลดสลิป</p>
+          </div>
+          <div class="feature">
+            <h3>แอดมินตรวจสลิปเอง</h3>
+            <p>เจ้าของทัวร์กดยืนยันการจ่ายเงินจากหลังบ้าน ก่อนที่นั่งจะถูกล็อกให้ลูกค้าคนนั้น</p>
+          </div>
+          <div class="feature">
+            <h3>รีวิวจากลูกค้าจริง</h3>
+            <p>แต่ละทัวร์มีรีวิวติดอยู่ ให้คนที่กำลังตัดสินใจอ่านก่อนจองได้</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="section-inner">
+        <p class="kicker">อยากรู้ลึกกว่านี้</p>
+        <h2>เบื้องหลังทำงานยังไง</h2>
+        <p>ฝั่งหน้าเว็บ (frontend) เขียนด้วย React แล้ว build เป็นไฟล์ static วางไว้บน CDN เว็บเลยเปิดได้เร็วและไม่มีวันหลับ ส่วนฝั่งหลังบ้าน (backend) เขียนด้วย NestJS รันอยู่ใน Docker คุยกับฐานข้อมูล PostgreSQL ที่เก็บทัวร์ การจอง และผู้ใช้ทั้งหมดจริง ๆ</p>
+        <p>หน้าเว็บกับ API อยู่โดเมนเดียวกัน ล็อกอินแล้วคุกกี้เลยทำงานได้ปกติโดยไม่ต้องเปิดช่องพิเศษข้ามโดเมน แล้วมีระบบ ping เข้าไปเตือนเซิร์ฟเวอร์ทุก 5 นาที กันไม่ให้หลับตอนไม่มีคนเข้าใช้ช่วงว่าง</p>
+        <div class="tags">
+          <span class="tag">Static site บน CDN</span>
+          <span class="tag">Docker web service</span>
+          <span class="tag">Managed Postgres</span>
+          <span class="tag">โดเมนเดียวกันทั้งเว็บและ API</span>
+          <span class="tag">ระบบ ping กันเซิร์ฟเวอร์หลับ</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="analytics">
+      <div class="section-inner wide">
+        <p class="kicker">ชุดข้อมูลจำลอง</p>
+        <h2>แดชบอร์ดวิเคราะห์ข้อมูล (ตัวอย่าง)</h2>
+        <p>ในหลังบ้านแอดมินมีแดชบอร์ดสรุปยอดจอง การจ่ายเงิน และพฤติกรรมลูกค้า ตัวเลขด้านล่างมาจาก<strong>ชุดข้อมูลจำลอง</strong>ที่ทำขึ้นเพื่อโชว์ว่าแดชบอร์ดหน้าตาเป็นแบบไหน ไม่ใช่ยอดขายจริง</p>
+        <div class="table-wrap">
+          <table>
+            <caption class="kicker" style="margin-bottom:0.75rem;">ตัวชี้วัดจากชุดข้อมูลจำลอง</caption>
+            <thead>
+              <tr><th>ตัวชี้วัด</th><th>ค่า</th><th>คำนวณจาก</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>อัตราแปลงจากการดูเป็นการจอง</td><td class="num">26.7%</td><td>40 การจอง / 150 การดูทัวร์</td></tr>
+              <tr><td>อัตราโอนเงินหลังจอง</td><td class="num">75.0%</td><td>30 การจ่ายเงิน / 40 การจอง</td></tr>
+              <tr><td>อัตรายืนยันการโอนสำเร็จ</td><td class="num">66.7%</td><td>20 ที่ยืนยันแล้ว / 30 การจ่ายเงิน</td></tr>
+              <tr><td>การแจ้งเตือนต่อการจอง</td><td class="num">1.75</td><td>70 / 40</td></tr>
+              <tr><td>ทัวร์โปรดต่อผู้ใช้</td><td class="num">3.88</td><td>31 / 8</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note"><strong>หมายเหตุ:</strong> ตัวเลขข้างต้นมาจาก <code>dashboard.seeder.ts</code> ชุดข้อมูลจำลองทัวร์ 30 รายการและการจอง 40 รายการ ใช้โชว์รูปแบบแดชบอร์ดเท่านั้น ไม่ใช่ยอดขายหรือการใช้งานจริง</div>
+      </div>
+      <footer class="close" style="margin-top:3.5rem;">
+        <a class="cta" href="https://ninetours-frontend.onrender.com/" target="_blank" rel="noopener">เปิดเว็บเต็มจอ &rarr;</a>
+        <p class="credit">9Tours — พัฒนาและขึ้นใช้งานจริงเป็นโปรเจกต์แสดงผลงาน</p>
+      </footer>
+    </section>
+  </main>
+</div>
+
+<script>
+  (function(){
+    var links = Array.prototype.slice.call(document.querySelectorAll('.subnav a'));
+    var sections = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+    if (!('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (!entry.isIntersecting) return;
+        var idx = sections.indexOf(entry.target);
+        if (idx === -1) return;
+        links.forEach(function(l){ l.classList.remove('active'); });
+        links[idx].classList.add('active');
+      });
+    }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+    sections.forEach(function(s){ if (s) io.observe(s); });
+  })();
+</script>
+</body>
+</html>
