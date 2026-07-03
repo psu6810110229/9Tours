@@ -35,11 +35,11 @@ services:
       - key: ACCESS_TOKEN_TTL
         value: 15m
       - key: FRONTEND_URL
-        value: https://9tours-frontend.onrender.com
+        value: https://ninetours-frontend.onrender.com
       - key: CORS_ORIGINS
-        value: https://9tours-frontend.onrender.com
+        value: https://ninetours-frontend.onrender.com
       - key: BACKEND_PUBLIC_URL
-        value: https://9tours-frontend.onrender.com/api
+        value: https://ninetours-frontend.onrender.com/api
       - key: UPLOADS_ROOT
         value: /app/uploads
       - key: MAIL_ENABLED
@@ -53,7 +53,7 @@ services:
       - key: GOOGLE_CLIENT_SECRET
         sync: false
       - key: GOOGLE_CALLBACK_URL
-        value: https://9tours-frontend.onrender.com/api/auth/google/callback
+        value: https://ninetours-frontend.onrender.com/api/auth/google/callback
 
   # ---------- Frontend (Vite static site + proxy rewrites) ----------
   - type: web
