@@ -61,10 +61,6 @@
     justify-content:center;
     gap:1.75rem;
     padding:2.5rem;
-    background:
-      radial-gradient(60% 50% at 50% 20%, var(--primary-light), transparent 70%),
-      radial-gradient(70% 55% at 50% 90%, var(--accent-light), transparent 70%),
-      var(--surface);
     border-right:1px solid var(--border);
     overflow:hidden;
   }
@@ -365,13 +361,13 @@
     .subnav{ padding:1rem 1.5rem; }
   }
 
-  /* ---------- DotField: จุดพื้นหลังโต้ตอบเมาส์ในแผงซ้าย ---------- */
+  /* ---------- DotField: จุดพื้นหลังโต้ตอบเมาส์ทั่วทั้งหน้า ---------- */
   .dot-field-canvas{
-    position:absolute;
+    position:fixed;
     inset:0;
-    width:100%;
-    height:100%;
-    z-index:0;
+    width:100vw;
+    height:100vh;
+    z-index:-1;
     pointer-events:none;
   }
 
@@ -432,9 +428,9 @@
 </head>
 <body>
 
+<canvas class="dot-field-canvas" aria-hidden="true"></canvas>
 <div class="layout">
   <aside class="rail">
-    <canvas class="dot-field-canvas" aria-hidden="true"></canvas>
     <span class="eyebrow"><span class="status-dot" aria-hidden="true"></span>เปิดใช้งานอยู่ตอนนี้</span>
     <div class="qr-frame">
       <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAJYAQMAAACEqAqfAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAC0ElEQVR4nO3cMZLjIBCFYVwOFOoIOgpHk4+mo+gIDieYMrs0DTTIW7W1NQFr/peMJcHnybpokJ37weyhzyM9uIVwOhfClw704SV/Zczh7pd5LywsLCysoa08WLJGa4mDk+XixSPOPFyTuz7O8VhYWFhYc1leS4laJlKH9vCtdWjVgUeybnr5hYWFhYX1P1qLXp66ygjRkpXIs6xEsLCwsLCwrOVqh0rXHTn/VNOwsLCwsD7Rcnaw1qHf1hZMjjJmKZYJFhYWFtboVp9mj+Las6pWFywsLCysWaw/xOsAudhTzypFbh/vZ2FhYWFhDWvtwaQ2kvK6w5UNC0neo/BR37SaaLHBwsLCwprFug7WLlZed4Sya2FS1x3PUrheWFhYWFjTWK6UFVOH6nsUztaqPFOyXe5gYWFhYQ1r6bhs9dE9Ckl+j6KuO1L6NQwWFhYW1odbkuZRzVnWHXetTFJ17MyiOywsLCysaaw9fj6Mm3tWOYt9s2K9fJ/tWWFhYWFhjWzJzPxaRL+/XdN8Xzeh1A4sLCwsrDmsnNMO9eVsVB1j6pDub+dXJ9r+FxYWFhbWgJamrx2H/n5Gfdzdybn0rLCwsLCwPt7a08zmaOuiF+ffnYWVpYvpf2FhYWFhfbxlCpI+b0rUUqb3+9ubtWKwsLCwsIa3Uimogo+XZ1s7Us+q71AZHQsLCwtrIsuXH3Nay2sR/W/7Oa1Doc3TbIdgYWFhYc1hvYvpWdV4vWnr0M2qWFhYWFgjW3vo8yiWxCxLau040ob4zY5xWFhYWFjTWPohZdUOlWS7nKuVNHXI7oBgYWFhYQ1uea0Btc8U7HsU9Sxsc9xJ8qZnhYWFhYU1qxV0j0LyfTkLm7OWe1hYWFhY01tmxaLTcx2S3EObqGNhYWFhDW7VvK0dD/tYcz0AhYWFhYU1j9VHHzVnYXOeeseny1Sryr+DhYWFhTWH9YP5BWfbxXqcw3BnAAAAAElFTkSuQmCC" alt="QR โค้ดลิงก์เข้าเว็บ 9Tours">
@@ -459,13 +455,6 @@
         <p class="kicker">เว็บจองทัวร์แบบครบวงจร</p>
         <h1 id="hero-title"><span class="blur-word">ไม่ใช่</span> <span class="blur-word">mockup</span> <span class="blur-word">แต่เป็นเว็บที่<em>ใช้งานได้จริง</em></span></h1>
         <p class="lede">จองทัวร์เที่ยววันเดียวทั่วภาคใต้ ตั้งแต่ดูทัวร์ เช็คที่นั่ง จ่ายเงิน ถึงหลังบ้านแอดมิน</p>
-        <div class="tags">
-          <span class="tag">NestJS + TypeORM</span>
-          <span class="tag">React 19 + Vite</span>
-          <span class="tag">PostgreSQL</span>
-          <span class="tag">Docker</span>
-          <span class="tag">ขึ้นระบบบน Render</span>
-        </div>
         <div class="stack-loop" aria-label="เทคโนโลยีที่ใช้พัฒนา">
           <div class="stack-loop__track" id="stack-loop-track">
             <span class="stack-loop__item"><svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>React</title><path d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z"/></svg>React 19</span>
@@ -639,9 +628,8 @@
     var subnav = document.getElementById('subnav');
 
     var IDLE_DELAY = 3200;
-    var HOLD = 900;
-    var POLL_MS = 80;
-    var MAX_POLLS = 60;
+    var HOLD = 2600;
+    var SCROLL_DURATION = 1700;
 
     var idleTimer = null;
     var runToken = 0;
@@ -657,22 +645,31 @@
       return subnav ? subnav.getBoundingClientRect().height : 0;
     }
 
-    // เลื่อน window หรือ iframe.contentWindow ไปที่ตำแหน่ง targetY แบบ smooth แล้วรอจนนิ่ง
+    function easeInOutCubic(t){
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    // เลื่อน window หรือ iframe.contentWindow ไปที่ตำแหน่ง targetY แบบ smooth ช้า ๆ ให้อ่านทัน
     function smoothScrollTo(win, targetY, token){
       return new Promise(function(resolve){
         if (token !== runToken || !win) return resolve(false);
-        try { win.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' }); }
-        catch (e) { return resolve(false); }
-        var last = null, stable = 0, tries = 0;
-        var iv = setInterval(function(){
-          if (token !== runToken) { clearInterval(iv); return resolve(false); }
-          var cur;
-          try { cur = win.scrollY; } catch (e) { clearInterval(iv); return resolve(false); }
-          if (last !== null && Math.abs(cur - last) < 1) stable++; else stable = 0;
-          last = cur;
-          tries++;
-          if (stable >= 3 || tries > MAX_POLLS) { clearInterval(iv); resolve(token === runToken); }
-        }, POLL_MS);
+        var startY;
+        try { startY = win.scrollY; } catch (e) { return resolve(false); }
+        var clampedTarget = Math.max(0, targetY);
+        var distance = clampedTarget - startY;
+        if (Math.abs(distance) < 1) return resolve(true);
+        var startTime = null;
+        var raf = win.requestAnimationFrame || window.requestAnimationFrame;
+        function step(ts){
+          if (token !== runToken) return resolve(false);
+          if (startTime === null) startTime = ts;
+          var t = Math.min(1, (ts - startTime) / SCROLL_DURATION);
+          try { win.scrollTo(0, startY + distance * easeInOutCubic(t)); }
+          catch (e) { return resolve(false); }
+          if (t < 1) raf(step);
+          else resolve(token === runToken);
+        }
+        raf(step);
       });
     }
 
@@ -796,11 +793,10 @@
     io.observe(title);
   })();
 
-  /* DotField: กริดจุดพื้นหลังในแผงซ้าย โป่งตามเมาส์ */
+  /* DotField: กริดจุดพื้นหลังโต้ตอบเมาส์ทั่วทั้งหน้า โป่งตามเมาส์ */
   (function(){
     var canvas = document.querySelector('.dot-field-canvas');
     if (!canvas || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var rail = canvas.parentElement;
     var ctx = canvas.getContext('2d', { alpha: true });
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
 
@@ -809,14 +805,14 @@
       dotSpacing: 15,
       cursorRadius: 220,
       bulgeStrength: 40,
-      glowRadius: 140,
-      gradientFrom: 'rgba(37,99,235,0.30)',
-      gradientTo: 'rgba(245,166,35,0.20)',
-      glowColor: '#DBEAFE'
+      glowRadius: 160,
+      gradientFrom: 'rgba(37,99,235,0.20)',
+      gradientTo: 'rgba(245,166,35,0.14)',
+      glowColor: 'rgba(37,99,235,0.16)'
     };
 
     var dots = [];
-    var size = { w: 0, h: 0, offsetX: 0, offsetY: 0 };
+    var size = { w: 0, h: 0 };
     var mouse = { x: -9999, y: -9999 };
     var resizeTimer;
 
@@ -837,14 +833,13 @@
     }
 
     function doResize() {
-      var rect = rail.getBoundingClientRect();
-      var w = rect.width, h = rect.height;
+      var w = window.innerWidth, h = window.innerHeight;
       canvas.width = w * dpr;
       canvas.height = h * dpr;
       canvas.style.width = w + 'px';
       canvas.style.height = h + 'px';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      size = { w: w, h: h, offsetX: rect.left + window.scrollX, offsetY: rect.top + window.scrollY };
+      size = { w: w, h: h };
       buildDots(w, h);
     }
 
@@ -854,8 +849,8 @@
     }
 
     function onMouseMove(e) {
-      mouse.x = e.pageX - size.offsetX;
-      mouse.y = e.pageY - size.offsetY;
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
     }
 
     var rafId = null;
@@ -896,9 +891,7 @@
         glowGrad.addColorStop(0, opts.glowColor);
         glowGrad.addColorStop(1, 'transparent');
         ctx.fillStyle = glowGrad;
-        ctx.globalAlpha = 0.5;
         ctx.fillRect(mouse.x - opts.glowRadius, mouse.y - opts.glowRadius, opts.glowRadius * 2, opts.glowRadius * 2);
-        ctx.globalAlpha = 1;
       }
 
       rafId = requestAnimationFrame(tick);
@@ -907,10 +900,6 @@
     doResize();
     window.addEventListener('resize', resize);
     window.addEventListener('mousemove', onMouseMove, { passive: true });
-    if ('ResizeObserver' in window) {
-      var ro = new ResizeObserver(resize);
-      ro.observe(rail);
-    }
     rafId = requestAnimationFrame(tick);
   })();
 </script>
