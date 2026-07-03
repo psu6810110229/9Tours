@@ -70,10 +70,10 @@ services:
     routes:
       - type: rewrite
         source: /api/*
-        destination: https://9tours-backend.onrender.com/*
+        destination: https://ninetours-backend.onrender.com/*
       - type: rewrite
         source: /uploads/*
-        destination: https://9tours-backend.onrender.com/uploads/*
+        destination: https://ninetours-backend.onrender.com/uploads/*
       - type: rewrite
         source: /*
         destination: /index.html
