@@ -23,7 +23,7 @@ export default function ImageUploadSection({
 }: ImageUploadSectionProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
-  const [uploadingSlots, setUploadingSlots] = useState<UploadingSlot[]>([]);
+  const [uploadingSlots] = useState<UploadingSlot[]>([]);
   const dragSrcIndexRef = useRef<number | null>(null);
   const dragOverIndexRef = useRef<number | null>(null);
 

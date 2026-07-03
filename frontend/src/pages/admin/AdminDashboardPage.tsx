@@ -343,7 +343,7 @@ export default function AdminDashboardPage() {
                           width={24}
                         />
                         <Tooltip
-                          formatter={(value: number, name: string) => [value, name]}
+                          formatter={(value: number | undefined, name: string | undefined) => [value ?? 0, name ?? '']}
                           labelFormatter={(label) => `วันที่ ${label}`}
                         />
                         <Legend wrapperStyle={{ fontSize: 11 }} />
