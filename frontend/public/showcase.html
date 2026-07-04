@@ -134,12 +134,21 @@
     top:0;
     z-index:5;
     display:flex;
+    align-items:center;
     gap:0.5rem;
     padding:1rem 3rem;
     background:rgba(255,255,255,0.92);
     backdrop-filter:blur(10px);
     border-bottom:1px solid var(--border);
     overflow-x:auto;
+  }
+  .subnav-logo{
+    height:2rem;
+    width:auto;
+    flex:none;
+    margin-right:1rem;
+    padding-right:1.1rem;
+    border-right:1px solid var(--border);
   }
   .subnav a{
     font-size:1.05rem;
@@ -178,6 +187,7 @@
     margin:0 0 1.3rem;
     max-width:16ch;
   }
+  h1 .hero-brand{ color:var(--accent-dark); }
   h2{
     font-weight:700;
     font-size:clamp(2rem,3.4vw,2.9rem);
@@ -473,6 +483,7 @@
 
   <main class="content">
     <nav class="subnav" id="subnav">
+      <img class="subnav-logo" src="/9tours-logo1.png" alt="9Tours">
       <a href="#overview" data-idx="0">ภาพรวม</a>
       <a href="#browse" data-idx="1">ดูทัวร์จริง</a>
       <a href="#booking" data-idx="2">จองที่นั่งจริง</a>
@@ -484,7 +495,7 @@
     <section id="overview">
       <div class="section-inner">
         <p class="kicker">เว็บจองทัวร์ที่พัฒนาบนหลัก จอง จ่าย จบ</p>
-        <h1 id="hero-title"><span class="blur-word">9Tours</span> <span class="blur-word">เว็บไซต์</span> <span class="blur-word">จองทัวร์ออนไลน์</span></h1>
+        <h1 id="hero-title"><span class="blur-word hero-brand">9Tours</span> <span class="blur-word">เว็บไซต์</span> <span class="blur-word">จองทัวร์ออนไลน์</span></h1>
         <p class="lede">จอง เจอ จ่าย ครบจบในที่เดียว</p>
         <div class="stack-loop" aria-label="เทคโนโลยีที่ใช้พัฒนา">
           <div class="stack-loop__track" id="stack-loop-track">
@@ -749,15 +760,18 @@
       var iframe = section.querySelector('.device-frame iframe');
       if (!device) { await wait(HOLD, token); return; }
 
-      // 1) เลื่อนหน้าให้กรอบ demo โผล่เต็ม ๆ ไม่ถูกตัดขอบ
+      // 1) เลื่อนแค่เท่าที่จำเป็นให้เห็นกรอบ demo เต็ม ๆ โดยพยายามให้หัวข้อด้านบนยังติดจออยู่ด้วย
       var rect = device.getBoundingClientRect();
-      var targetY = window.scrollY + rect.top - subnavHeight() - 18;
-      if (!(await smoothScrollTo(window, targetY, token))) return;
+      var topLimit = subnavHeight();
+      var overflowBottom = rect.bottom - window.innerHeight;
+      var overflowTop = topLimit - rect.top;
+      var delta = overflowBottom > 0 ? overflowBottom : (overflowTop > 0 ? -overflowTop : 0);
+      if (delta !== 0 && !(await smoothScrollTo(window, window.scrollY + delta, token))) return;
       await wait(HOLD, token);
       if (token !== runToken) return;
 
       rect = device.getBoundingClientRect();
-      var fullyVisible = rect.top >= subnavHeight() - 2 && rect.bottom <= window.innerHeight + 2;
+      var fullyVisible = rect.top >= topLimit - 2 && rect.bottom <= window.innerHeight + 2;
       if (!fullyVisible || !iframe) { await wait(HOLD, token); return; }
 
       var iframeWin;
